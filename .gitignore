@@ -1,0 +1,11 @@
+/build/
+/out/
+/test.data/
+/user.home*/
+~*
+/*.jar
+/*.log
+/*.conf
+/*.rtf
+hs_err_pid*
+.DS_Store
