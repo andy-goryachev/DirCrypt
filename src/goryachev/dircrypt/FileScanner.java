@@ -12,11 +12,13 @@ import java.util.List;
  */
 public class FileScanner
 {
+	private final Logger log;
 	private final List<File> dirs;
 	
 	
-	public FileScanner(List<File> dirs)
+	public FileScanner(Logger log, List<File> dirs)
 	{
+		this.log = log;
 		this.dirs = dirs;
 	}
 	

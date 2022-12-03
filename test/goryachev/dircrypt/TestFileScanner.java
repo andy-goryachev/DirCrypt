@@ -20,8 +20,9 @@ public class TestFileScanner
 	@Test
 	public void load() throws Exception
 	{
+		Logger log = new Logger(true);
 		File dir = new File(".");
-		Header h = new FileScanner(List.of(dir)).scan();
+		Header h = new FileScanner(log, List.of(dir)).scan();
 		TF.notNull(h);
 	}
 }

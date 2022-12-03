@@ -70,4 +70,10 @@ public class CmdArgs
 			// TODO passphrase
 			"";
 	}
+
+
+	public void validate()
+	{
+		// TODO
+	}
 }
