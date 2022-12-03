@@ -5,7 +5,7 @@
 <project default="build-all" basedir=".">
 
 	<!-- project config -->
-	<property name="TARGET" value="AccessPanel"/>
+	<property name="TARGET" value="DirCrypt"/>
 	<property name="MAIN_CLASS" value="goryachev.dircrypt.DirCrypt"/>
 
 	<!-- libraries -->
@@ -36,14 +36,13 @@
 			fork="true"
 			nowarn="true"
 			optimize="false"
-			source="8"
-			target="8"
+			source="1.8"
+			target="1.8"
 			includeantruntime="false"
 		>
 			<compilerarg value="-Xlint:none"/>
 			<compilerarg value="-XDsuppressNotes"/>
 			<src path="src" />
-			<src path="src.third.party" />
 			<classpath refid="libs" />
 		</javac>
 	</target>
