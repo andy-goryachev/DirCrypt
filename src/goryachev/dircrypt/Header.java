@@ -51,21 +51,60 @@ public class Header
 
 	public void addDir(String name)
 	{
-		Entry en = new Entry(EntryType.DIR, name, 0, 0, (short)0);
-		add(en);
+		add(new Entry()
+		{
+			public EntryType getType() { return EntryType.DIR; }
+			public String getName() { return name; }
+		});
 	}
 	
 
 	public void addEnd()
 	{
-		Entry en = new Entry(EntryType.END, null, 0, 0, (short)0);
-		add(en);
+		add(new Entry()
+		{
+			public EntryType getType() { return EntryType.END; }
+		});
 	}
 
 
-	public void addFile(String name, long len, long mod, short attr)
+	public void addFile(String name, long len, long mod, int attr)
 	{
-		Entry en = new Entry(EntryType.FILE, name, len, mod, attr);
-		add(en);
+		add(new Entry()
+		{
+			public EntryType getType() { return EntryType.FILE; }
+			public String getName() { return name; }
+			public long getLength() { return len; };
+			public long getLastModified() { return mod; }
+			public int getAttributes() { return attr; };
+		});
+	}
+	
+	
+	//
+	
+	
+	public static abstract class Entry
+	{
+		public abstract EntryType getType();
+		
+		public String getName() { return null; }
+		
+		public long getLength() { return 0L; };
+		
+		public long getLastModified() { return 0L; }
+		
+		public int getAttributes() { return 0; };
+		
+		//
+		
+		private transient Entry parent;
+		
+		
+		public String toString()
+		{
+			String name = getName();
+			return getType() + (name == null ? "" : " " + name);
+		}
 	}
 }
