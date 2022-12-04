@@ -23,22 +23,24 @@ public class DirCrypt
 			
 			if(a.encrypt)
 			{
+				String pass = checkPassphrase(a.passPhrase);
 				String s = a.outputDir;
 				File outFile = checkOutputFile(s);
 				List<File> dirs = checkDirectories(a.dirs);
 				
-				DirCryptProcess.encrypt(log, dirs, outFile);
+				DirCryptProcess.encrypt(log, pass, dirs, outFile);
 			}
 			else if(a.decrypt)
 			{
+				String pass = checkPassphrase(a.passPhrase);
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
 				
-				DirCryptProcess.decrypt(log, in);
+				DirCryptProcess.decrypt(log, pass, in);
 			}
 			else
 			{
-				throw new UserException("Must specify --enc (encrypt) or --dec (decrypt).");
+				throw new UserException("Required: --enc (encrypt) or --dec (decrypt).");
 			}
 		}
 		catch(UserException e)
@@ -60,6 +62,16 @@ public class DirCrypt
 	}
 	
 	
+	private static String checkPassphrase(String s)
+	{
+		if(CKit.isBlank(s))
+		{
+			throw err("Passphrase is required");
+		}
+		return s;
+	}
+
+
 	private static List<File> checkDirectories(List<String> dirs)
 	{
 		CList<File> fs = new CList<>();

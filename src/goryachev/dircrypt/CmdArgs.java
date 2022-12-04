@@ -14,6 +14,7 @@ public class CmdArgs
 	public boolean decrypt;
 	public String inputFile;
 	public String outputDir;
+	public String passPhrase;
 	public boolean verbose;
 	
 	
@@ -38,6 +39,9 @@ public class CmdArgs
 					break;
 				case "--out":
 					a.outputDir = p.nextToken();
+					break;
+				case "--pass":
+					a.passPhrase = p.nextToken();
 					break;
 				case "--verbose":
 					a.verbose = true;
@@ -64,10 +68,10 @@ public class CmdArgs
 			"Decrypt:\n" +
 			"  java -jar dirCrypt.jar --dec --in FILE [options]\n" +
 			"Options:\n" +
-			"  --in FILE - input file\n" +
-			"  --out FILE - output directory\n" +
+			"  --in INPUT_FILE\n" +
+			"  --out OUTPUT_DIRECTORY\n" +
+			"  --pass PASSPHRASE\n" +
 			"  --verbose log messages to stdout\n" +
-			// TODO passphrase
 			"";
 	}
 

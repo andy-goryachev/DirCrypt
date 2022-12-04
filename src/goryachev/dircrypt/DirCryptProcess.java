@@ -9,8 +9,7 @@ import java.util.List;
  */
 public class DirCryptProcess
 {
-	// TODO passphrase
-	public static void encrypt(Logger log, List<File> dirs, File outFile) throws Exception
+	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile) throws Exception
 	{
 		FileScanner fs = new FileScanner(log, dirs);
 		Header h = fs.scan();
@@ -29,8 +28,7 @@ public class DirCryptProcess
 	}
 
 
-	// TODO passphrase
-	public static void decrypt(Logger log, File inputFile) throws Exception
+	public static void decrypt(Logger log, String pass, File inputFile) throws Exception
 	{
 		// TODO
 		// read random
