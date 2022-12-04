@@ -16,11 +16,12 @@ public class Logger
 	}
 	
 	
-	public void log(String fmt, Object ... args)
+	public void printf(String fmt, Object ... args)
 	{
 		if(on)
 		{
-			System.out.printf(fmt, args);
+			String msg = String.format(fmt, args);
+			System.out.println(msg);
 		}
 	}
 }

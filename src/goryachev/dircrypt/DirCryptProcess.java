@@ -16,7 +16,6 @@ public class DirCryptProcess
 		Header h = fs.scan();
 		
 		// TODO
-		// write output
 		// create temp file
 		// write random
 		// write signature

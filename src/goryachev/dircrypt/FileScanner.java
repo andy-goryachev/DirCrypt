@@ -2,6 +2,7 @@
 package goryachev.dircrypt;
 import goryachev.common.util.CComparator;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -44,25 +45,35 @@ public class FileScanner
 			
 			for(File f: files)
 			{
+				String name = f.getName();
+				
 				if(f.isDirectory())
 				{
-					String name = f.getName();
-					// modified?
+					log.printf("SCAN dir %s", name);
+					
 					h.addDir(name);
 					scan(h, f);
 					h.addEnd();
+					
+					log.printf("SCAN dir END");
 				}
 				else if(f.isFile())
 				{
-					String name = f.getName();
 					long len = f.length();
 					long mod = f.lastModified();
-					short attr = 0;
-					h.addFile(name, len, mod, attr);
+					
+					log.printf("SCAN file name=%s len=%d mod=%d", name, len, mod);
+					// TODO skip non-readable files?
+					// TODO rwxh
+					boolean readOnly = !f.canWrite();
+					boolean hidden = f.isHidden(); // TODO do we need attributes?
+					//Files.getPosixFilePermissions()
+					h.addFile(name, len, mod, readOnly);
 				}
 				else
 				{
 					// FIX what could it be?
+					log.printf("SCAN unknown type name=%s", name);
 				}
 			}
 		}

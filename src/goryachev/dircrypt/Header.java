@@ -44,7 +44,6 @@ public class Header
 	
 	protected void add(Entry en)
 	{
-		System.err.println(en); // FIX
 		entries.add(en);
 	}
 
@@ -68,7 +67,7 @@ public class Header
 	}
 
 
-	public void addFile(String name, long len, long mod, int attr)
+	public void addFile(String name, long len, long mod, boolean readOnly)
 	{
 		add(new Entry()
 		{
@@ -76,7 +75,7 @@ public class Header
 			public String getName() { return name; }
 			public long getLength() { return len; };
 			public long getLastModified() { return mod; }
-			public int getAttributes() { return attr; };
+			public boolean isReadOnly() { return readOnly; };
 		});
 	}
 	
@@ -90,11 +89,11 @@ public class Header
 		
 		public String getName() { return null; }
 		
-		public long getLength() { return 0L; };
+		public long getLength() { return -1L; };
 		
 		public long getLastModified() { return 0L; }
 		
-		public int getAttributes() { return 0; };
+		public boolean isReadOnly() { return false; };
 		
 		//
 		
