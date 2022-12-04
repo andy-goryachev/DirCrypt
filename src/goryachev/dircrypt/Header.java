@@ -10,9 +10,6 @@ import java.io.OutputStream;
  */
 public class Header
 {
-	// TODO random?
-	// TODO scrypt parameters?
-	//private final long version;
 	private final CList<Entry> entries = new CList<>();
 	
 	
@@ -21,7 +18,7 @@ public class Header
 	}
 	
 	
-	public static Header load(InputStream in)
+	public static Header read(InputStream in)
 	{
 		// TODO
 		return null;
@@ -29,7 +26,7 @@ public class Header
 	
 	
 	/** serialized length in bytes */
-	public int getByteCount()
+	public int getLengthInBytes()
 	{
 		// TODO
 		return 0;

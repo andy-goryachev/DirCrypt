@@ -27,6 +27,7 @@ public class CmdArgs
 	{
 		CommandLineArgumentsParser p = new CommandLineArgumentsParser(args);
 		CmdArgs a = new CmdArgs();
+
 		String tok;
 		while((tok = p.nextToken()) != null)
 		{
@@ -34,6 +35,12 @@ public class CmdArgs
 			{
 				switch(tok)
 				{
+				case "--dec":
+					a.decrypt = true;
+					break;
+				case "--enc":
+					a.encrypt = true;
+					break;
 				case "--inp":
 					a.inputFile = p.nextToken();
 					break;

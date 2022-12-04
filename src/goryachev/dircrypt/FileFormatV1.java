@@ -15,19 +15,23 @@ import java.security.SecureRandom;
 
 
 /**
- * Handles the main key persistence.
+ * File Format Version 1 Constants.
  */
-public final class KeyFile
+public final class FileFormatV1
 {
-	public static final long SIGNATURE_V1 = 0x1DEA202112011515L;
+	public static final long SIGNATURE = 0x1DEA_2022_1204_1420L;
 	
 	public static final int KEY_SIZE_BYTES = 256/8;
-	public static final int NONCE_SIZE_BYTES = 256/8;
+	public static final int IV_SIZE_BYTES = 192/8;
+	public static final int SALT_SIZE_BYTES = 256/8;
+
 	public static final int SCRYPT_N = 16384;
 	public static final int SCRYPT_R = 8;
 	public static final int SCRYPT_P = 32;
+
 	
-	/** enforce encrypted block size in 4k increments to mask the length of the payload */ 
+	/*
+	// enforce encrypted block size in 4k increments to mask the length of the payload  
 	public static final int BLOCK_LENGTH = 4096;
 	public static final int HEADER_SIZE = 8 + (4 * 3) + NONCE_SIZE_BYTES;
 	
@@ -35,10 +39,6 @@ public final class KeyFile
 	public static final String ERROR_WRONG_SIGNATURE = "ERROR_WRONG_SIGNATURE";
 	
 	
-	/**
-	 * Encrypts payload byte array with a key derived from the supplied password.
-	 * Returns the byte array formatted according to the specification.  
-	 */
 	public static final byte[] encrypt(SecureRandom random, OpaqueChars pass, CByteArray payload) throws Exception
 	{
 		int containerSize = (((payload.length() + 4) / BLOCK_LENGTH) + 1) * BLOCK_LENGTH;
@@ -57,7 +57,7 @@ public final class KeyFile
 			try
 			{
 				// header
-				out.writeLong(SIGNATURE_V1);
+				out.writeLong(SIGNATURE);
 				out.writeInt(n);
 				out.writeInt(r);
 				out.writeInt(p);
@@ -111,10 +111,6 @@ public final class KeyFile
 	}
 	
 	
-	/**
-	 * Attempts to decrypt the supplied byte array using the specified passphrase.
-	 * Returns the decrypted data or throws an exception. 
-	 */
 	public static final OpaqueBytes decrypt(byte[] encrypted, OpaqueChars pass) throws Exception
 	{
 		if(pass == null)
@@ -135,7 +131,7 @@ public final class KeyFile
 		{			
 			// header
 			long ver = rd.readLong();
-			if(ver != SIGNATURE_V1)
+			if(ver != SIGNATURE)
 			{
 				throw new Exception(ERROR_WRONG_SIGNATURE);
 			}
@@ -223,4 +219,5 @@ public final class KeyFile
 		d.doFinal(out, 0);
 		return out;
 	}
+	*/
 }
