@@ -63,12 +63,7 @@ public class FileScanner
 					long mod = f.lastModified();
 					
 					log.printf("SCAN file name=%s len=%d mod=%d", name, len, mod);
-					// TODO skip non-readable files?
-					// TODO rwxh
-					boolean readOnly = !f.canWrite();
-					boolean hidden = f.isHidden(); // TODO do we need attributes?
-					//Files.getPosixFilePermissions()
-					h.addFile(name, len, mod, readOnly);
+					h.addFile(name, len, mod);
 				}
 				else
 				{

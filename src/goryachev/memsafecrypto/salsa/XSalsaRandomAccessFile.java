@@ -108,6 +108,13 @@ public class XSalsaRandomAccessFile
 	}
 	
 	
+	public void writeByte(int x) throws IOException
+	{
+		databuf[0] = (byte)x;
+		write(databuf, 0, 1);
+	}
+	
+	
 	public void writeLong(long x) throws IOException
 	{
 		CIOTools.longToBytes(databuf, x);

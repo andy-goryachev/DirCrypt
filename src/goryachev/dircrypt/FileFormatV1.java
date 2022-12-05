@@ -28,6 +28,11 @@ public final class FileFormatV1
 	public static final int SCRYPT_N = 16384;
 	public static final int SCRYPT_R = 8;
 	public static final int SCRYPT_P = 32;
+	
+	public static final int TYPE_DIR = 'D';
+	public static final int TYPE_END = 'E';
+	public static final int TYPE_FILE = 'F';
+	public static final int FILE_HASH_SIZE_BYTES = 256/8;
 
 	
 	/*

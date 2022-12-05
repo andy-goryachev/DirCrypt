@@ -57,13 +57,14 @@ public class DirCryptProcess
 			byte[] nullHeader = new byte[sz];
 			rf.write(nullHeader);
 			
-			// write files
+			// write files, set hash values, check for differences
 			// TODO
 			
 			// set offset
 			rf.seek(offset);
 			
 			// write header
+			h.write(new OutputStreamWrapper(rf));
 			
 			// check cur.offset == offset + header.size
 			// TODO

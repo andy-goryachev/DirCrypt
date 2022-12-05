@@ -1,6 +1,9 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
+import goryachev.common.io.DWriter;
+import goryachev.common.util.CKit;
 import goryachev.common.util.CList;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -28,14 +31,39 @@ public class Header
 	/** serialized length in bytes */
 	public int getLengthInBytes()
 	{
-		// TODO
-		return 0;
+		int len = 4; // int size;
+		
+		int size = entries.size();
+		for(int i=0; i<size; i++)
+		{
+			Entry en = entries.get(i);
+			len += en.getLength();
+		}
+		
+		return len;
 	}
 	
 	
 	public void write(OutputStream out) throws Exception
 	{
-		// TODO
+		DWriter wr = new DWriter(out);
+		try
+		{
+			int size = entries.size();
+			wr.writeInt(size);
+			
+			for(int i=0; i<size; i++)
+			{
+				Entry en = entries.get(i);
+				en.write(wr);
+			}
+			
+			wr.flush();
+		}
+		finally
+		{
+			CKit.close(wr);
+		}
 	}
 
 	
@@ -49,8 +77,31 @@ public class Header
 	{
 		add(new Entry()
 		{
-			public EntryType getType() { return EntryType.DIR; }
-			public String getName() { return name; }
+			public EntryType getType()
+			{
+				return EntryType.DIR;
+			}
+
+
+			public String getName()
+			{
+				return name;
+			}
+
+
+			public int getLength()
+			{
+				return 1 + CKit.getBytes(name).length;
+			}
+			
+			
+			public void write(DWriter wr) throws IOException
+			{
+				byte[] b = CKit.getBytes(name);
+				
+				wr.writeByte(FileFormatV1.TYPE_DIR);
+				wr.writeByteArray(b);
+			}
 		});
 	}
 	
@@ -59,23 +110,91 @@ public class Header
 	{
 		add(new Entry()
 		{
-			public EntryType getType() { return EntryType.END; }
+			public EntryType getType()
+			{
+				return EntryType.END;
+			}
+
+
+			public int getLength()
+			{
+				return 1;
+			}
+			
+			
+			public void write(DWriter wr) throws IOException
+			{
+				wr.writeByte(FileFormatV1.TYPE_END);
+			}
 		});
 	}
 
 
-	public void addFile(String name, long len, long mod, boolean readOnly)
+	public void addFile(String name, long len, long mod)
 	{
 		add(new Entry()
 		{
-			public EntryType getType() { return EntryType.FILE; }
-			public String getName() { return name; }
-			public long getLength() { return len; };
-			public long getLastModified() { return mod; }
-			public boolean isReadOnly() { return readOnly; };
+			private byte[] hash;
+			private static final int OVERHEAD =
+				1 + // type
+				8 + // length
+				8 + // last modified
+				FileFormatV1.FILE_HASH_SIZE_BYTES; // hash
+			
+			
+			public EntryType getType()
+			{
+				return EntryType.FILE;
+			}
+
+
+			public String getName()
+			{
+				return name;
+			}
+
+
+			public long getFileLength()
+			{
+				return len;
+			};
+
+
+			public long getLastModified()
+			{
+				return mod;
+			}
+			
+			
+			public int getLength()
+			{
+				return OVERHEAD + CKit.getBytes(name).length;
+			}
+			
+			
+			public void write(DWriter wr) throws IOException
+			{
+				wr.writeByte(FileFormatV1.TYPE_FILE);
+				wr.writeString(name);
+				wr.writeLong(len);
+				wr.writeLong(mod);
+				wr.writeByteArray(hash);
+			}
+
+
+			public byte[] getHash()
+			{
+				return hash;
+			}
+
+
+			public void setHash(byte[] hash)
+			{
+				this.hash = hash;
+			}
 		});
 	}
-	
+
 	
 	//
 	
@@ -84,13 +203,19 @@ public class Header
 	{
 		public abstract EntryType getType();
 		
-		public String getName() { return null; }
+		public abstract int getLength();
 		
-		public long getLength() { return -1L; };
+		public abstract void write(DWriter wr) throws IOException;
+		
+		public String getName() { return null; }
 		
 		public long getLastModified() { return 0L; }
 		
-		public boolean isReadOnly() { return false; };
+		public long getFileLength() { return -1L; }
+		
+		public byte[] getHash() { throw new UnsupportedOperationException(); }
+		
+		public void setHash(byte[] hash) { throw new UnsupportedOperationException(); }
 		
 		//
 		
