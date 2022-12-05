@@ -4,6 +4,7 @@ import goryachev.common.io.DReader;
 import goryachev.common.io.DWriter;
 import goryachev.common.util.CKit;
 import goryachev.common.util.CList;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -190,6 +191,8 @@ public class Header
 		HeaderEntry en = new HeaderEntry()
 		{
 			private byte[] hash;
+			private File file;
+			
 			private static final int OVERHEAD =
 				1 + // type
 				8 + // length
@@ -225,8 +228,20 @@ public class Header
 			{
 				this.hash = hash;
 			}
-			
-			
+
+
+			public File getFile()
+			{
+				return file;
+			}
+
+
+			public void setFile(File f)
+			{
+				this.file = f;
+			}
+
+
 			public int getLength()
 			{
 				return OVERHEAD + CKit.getBytes(name).length;

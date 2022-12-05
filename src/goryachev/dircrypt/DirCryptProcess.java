@@ -2,8 +2,13 @@
 package goryachev.dircrypt;
 import goryachev.common.util.CKit;
 import goryachev.common.util.UserException;
+import goryachev.memsafecrypto.bc.Blake2bDigest;
 import goryachev.memsafecrypto.salsa.XSalsaRandomAccessFile;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,6 +20,9 @@ import java.util.concurrent.Future;
  */
 public class DirCryptProcess
 {
+	private static final int BUFFER_SIZE = 65536;
+	
+	
 	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile) throws Exception
 	{
 		// create a temp file before generating any key material
@@ -35,6 +43,8 @@ public class DirCryptProcess
 		
 		KeyMaterial km = futureKey.get();
 		km.checkError();
+		
+		byte[] buffer = new byte[BUFFER_SIZE];
 		
 		XSalsaRandomAccessFile rf = new XSalsaRandomAccessFile(f, true, km.key, km.iv);
 		try
@@ -63,7 +73,8 @@ public class DirCryptProcess
 				
 				if(en.getType() == EntryType.FILE)
 				{
-					byte[] hash = new byte[FileFormatV1.FILE_HASH_SIZE_BYTES]; // FIX
+					log.log("READ", "file", en.getName());
+					byte[] hash = writeFile(en, rf, buffer);
 					en.setHash(hash);
 				}
 			}
@@ -75,9 +86,6 @@ public class DirCryptProcess
 			h.write(new OutputStreamWrapper(rf));
 			
 			// check cur.offset == offset + header.size
-			// TODO
-			
-			// rename temp file
 			// TODO
 		}
 		finally
@@ -157,5 +165,40 @@ public class DirCryptProcess
 		}.start();
 
 		return f;
+	}
+	
+	
+	private static byte[] writeFile(HeaderEntry en, XSalsaRandomAccessFile rf, byte[] buf) throws Exception
+	{
+		File f = en.getFile();
+
+		try(InputStream in = new BufferedInputStream(new FileInputStream(f)))
+		{
+			try(OutputStream out = new OutputStreamWrapper(rf))
+			{
+				Blake2bDigest digest = new Blake2bDigest(FileFormatV1.FILE_HASH_SIZE_BYTES);
+
+				for(;;)
+				{
+					if(Thread.interrupted())
+					{
+						throw new InterruptedException();
+					}
+					
+					int rd = in.read(buf);
+					if(rd < 0)
+					{
+						byte[] b = new byte[FileFormatV1.FILE_HASH_SIZE_BYTES];
+						digest.doFinal(b, 0);
+						return b;
+					}
+					else if(rd > 0)
+					{
+						out.write(buf, 0, rd);
+						digest.update(buf, 0, rd);
+					}
+				}
+			}
+		}
 	}
 }

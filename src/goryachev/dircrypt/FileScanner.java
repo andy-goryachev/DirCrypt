@@ -63,7 +63,8 @@ public class FileScanner
 					long mod = f.lastModified();
 					
 					log.printf("SCAN file name=%s len=%d mod=%d", name, len, mod);
-					h.addFile(name, len, mod);
+					HeaderEntry en = h.addFile(name, len, mod);
+					en.setFile(f);
 				}
 				else
 				{

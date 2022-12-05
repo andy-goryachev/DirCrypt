@@ -1,6 +1,7 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
 import goryachev.common.io.DWriter;
+import java.io.File;
 import java.io.IOException;
 
 
@@ -22,6 +23,10 @@ public abstract class HeaderEntry
 	public long getFileLength() { return -1L; }
 	
 	public void setHash(byte[] hash) { throw new UnsupportedOperationException(); }
+	
+	public File getFile() { throw new UnsupportedOperationException(); }
+	
+	public void setFile(File f) { throw new UnsupportedOperationException(); }
 	
 	//
 	
