@@ -15,7 +15,7 @@ public class KeyMaterial
 	public final CByteArray key;
 	public final CByteArray salt;
 	public final CByteArray iv;
-	public final Exception error;
+	private Exception error;
 	
 	
 	public KeyMaterial(CByteArray key, CByteArray salt, CByteArray iv, Exception error)
@@ -95,5 +95,14 @@ public class KeyMaterial
 		b[6] = (byte)(x >>  8);
 		b[7] = (byte)(x);
 		return b;
+	}
+
+
+	public void checkError() throws Exception
+	{
+		if(error != null)
+		{
+			throw error;
+		}
 	}
 }

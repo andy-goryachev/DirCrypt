@@ -108,6 +108,27 @@ public class XSalsaRandomAccessFile
 	}
 	
 	
+	public int readByte() throws IOException
+	{
+		for(;;)
+		{
+			int rv = read(databuf, 0, 1);
+			if(rv < 1)
+			{
+				return -1;
+			}
+			else if(rv == 0)
+			{
+				continue;
+			}
+			else
+			{
+				return databuf[0] & 0xff;
+			}
+		}
+	}
+	
+	
 	public void writeByte(int x) throws IOException
 	{
 		databuf[0] = (byte)x;

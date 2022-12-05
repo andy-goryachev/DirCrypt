@@ -12,6 +12,7 @@ public class CmdArgs
 	public final CList<String> dirs = new CList();
 	public boolean encrypt;
 	public boolean decrypt;
+	public boolean force;
 	public String inputFile;
 	public String outputDir;
 	public String passPhrase;
@@ -41,7 +42,10 @@ public class CmdArgs
 				case "--enc":
 					a.encrypt = true;
 					break;
-				case "--inp":
+				case "--force":
+					a.force = true;
+					break;
+				case "--in":
 					a.inputFile = p.nextToken();
 					break;
 				case "--out":

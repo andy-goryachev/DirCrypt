@@ -1,5 +1,6 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
+import goryachev.common.io.DReader;
 import goryachev.common.io.DWriter;
 import goryachev.common.util.CKit;
 import goryachev.common.util.CList;
@@ -13,7 +14,7 @@ import java.io.OutputStream;
  */
 public class Header
 {
-	private final CList<Entry> entries = new CList<>();
+	private final CList<HeaderEntry> entries = new CList<>();
 	
 	
 	public Header()
@@ -21,10 +22,66 @@ public class Header
 	}
 	
 	
-	public static Header read(InputStream in)
+	// FIX reading unathenticated data, might run into size problem
+	public static Header read(InputStream in) throws IOException
 	{
-		// TODO
-		return null;
+		DReader rd = new DReader(in);
+		try
+		{
+			int size = rd.readInt();
+			if(size < 0)
+			{
+				throw new IOException("Format error (1)");
+			}
+			
+			Header h = new Header();
+			for(int i=0; i<size; i++)
+			{
+				int type = rd.readByte();
+				switch(type)
+				{
+				case FileFormatV1.TYPE_DIR:
+					{
+						String name = rd.readString();
+						h.addDir(name);
+					}
+					break;
+				case FileFormatV1.TYPE_END:
+					h.addEnd();
+					break;
+				case FileFormatV1.TYPE_FILE:
+					{
+						String name = rd.readString();
+						long len = rd.readLong();
+						long mod = rd.readLong();
+						byte[] hash = rd.readNBytes(FileFormatV1.FILE_HASH_SIZE_BYTES);
+						
+						HeaderEntry en = h.addFile(name, len, mod);
+						en.setHash(hash);
+					}
+					break;
+				default:
+					throw new IOException("Format error (2)");
+				}
+			}
+			return h;
+		}
+		finally
+		{
+			CKit.close(rd);
+		}
+	}
+	
+	
+	public int getEntryCount()
+	{
+		return entries.size();
+	}
+	
+	
+	public HeaderEntry getEntry(int ix)
+	{
+		return entries.get(ix);
 	}
 	
 	
@@ -36,7 +93,7 @@ public class Header
 		int size = entries.size();
 		for(int i=0; i<size; i++)
 		{
-			Entry en = entries.get(i);
+			HeaderEntry en = entries.get(i);
 			len += en.getLength();
 		}
 		
@@ -54,7 +111,7 @@ public class Header
 			
 			for(int i=0; i<size; i++)
 			{
-				Entry en = entries.get(i);
+				HeaderEntry en = entries.get(i);
 				en.write(wr);
 			}
 			
@@ -67,7 +124,7 @@ public class Header
 	}
 
 	
-	protected void add(Entry en)
+	protected void add(HeaderEntry en)
 	{
 		entries.add(en);
 	}
@@ -75,7 +132,7 @@ public class Header
 
 	public void addDir(String name)
 	{
-		add(new Entry()
+		add(new HeaderEntry()
 		{
 			public EntryType getType()
 			{
@@ -97,10 +154,8 @@ public class Header
 			
 			public void write(DWriter wr) throws IOException
 			{
-				byte[] b = CKit.getBytes(name);
-				
 				wr.writeByte(FileFormatV1.TYPE_DIR);
-				wr.writeByteArray(b);
+				wr.writeString(name);
 			}
 		});
 	}
@@ -108,7 +163,7 @@ public class Header
 
 	public void addEnd()
 	{
-		add(new Entry()
+		add(new HeaderEntry()
 		{
 			public EntryType getType()
 			{
@@ -130,9 +185,9 @@ public class Header
 	}
 
 
-	public void addFile(String name, long len, long mod)
+	public HeaderEntry addFile(String name, long len, long mod)
 	{
-		add(new Entry()
+		HeaderEntry en = new HeaderEntry()
 		{
 			private byte[] hash;
 			private static final int OVERHEAD =
@@ -166,6 +221,12 @@ public class Header
 			}
 			
 			
+			public void setHash(byte[] hash)
+			{
+				this.hash = hash;
+			}
+			
+			
 			public int getLength()
 			{
 				return OVERHEAD + CKit.getBytes(name).length;
@@ -174,58 +235,19 @@ public class Header
 			
 			public void write(DWriter wr) throws IOException
 			{
+				if(hash == null)
+				{
+					throw new IOException("null hash for entry " + this);
+				}
+				
 				wr.writeByte(FileFormatV1.TYPE_FILE);
 				wr.writeString(name);
 				wr.writeLong(len);
 				wr.writeLong(mod);
-				wr.writeByteArray(hash);
+				wr.write(hash);
 			}
-
-
-			public byte[] getHash()
-			{
-				return hash;
-			}
-
-
-			public void setHash(byte[] hash)
-			{
-				this.hash = hash;
-			}
-		});
-	}
-
-	
-	//
-	
-	
-	public static abstract class Entry
-	{
-		public abstract EntryType getType();
-		
-		public abstract int getLength();
-		
-		public abstract void write(DWriter wr) throws IOException;
-		
-		public String getName() { return null; }
-		
-		public long getLastModified() { return 0L; }
-		
-		public long getFileLength() { return -1L; }
-		
-		public byte[] getHash() { throw new UnsupportedOperationException(); }
-		
-		public void setHash(byte[] hash) { throw new UnsupportedOperationException(); }
-		
-		//
-		
-		private transient Entry parent;
-		
-		
-		public String toString()
-		{
-			String name = getName();
-			return getType() + (name == null ? "" : " " + name);
-		}
+		};
+		add(en);
+		return en;
 	}
 }

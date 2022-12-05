@@ -4,6 +4,7 @@ import goryachev.common.util.CKit;
 import goryachev.common.util.UserException;
 import goryachev.memsafecrypto.salsa.XSalsaRandomAccessFile;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -33,10 +34,7 @@ public class DirCryptProcess
 		Header h = fs.scan();
 		
 		KeyMaterial km = futureKey.get();
-		if(km.error != null)
-		{
-			throw km.error;
-		}
+		km.checkError();
 		
 		XSalsaRandomAccessFile rf = new XSalsaRandomAccessFile(f, true, km.key, km.iv);
 		try
@@ -58,7 +56,17 @@ public class DirCryptProcess
 			rf.write(nullHeader);
 			
 			// write files, set hash values, check for differences
-			// TODO
+			int count = h.getEntryCount();
+			for(int i=0; i<count; i++)
+			{
+				HeaderEntry en = h.getEntry(i);
+				
+				if(en.getType() == EntryType.FILE)
+				{
+					byte[] hash = new byte[FileFormatV1.FILE_HASH_SIZE_BYTES]; // FIX
+					en.setHash(hash);
+				}
+			}
 			
 			// set offset
 			rf.seek(offset);
@@ -89,12 +97,49 @@ public class DirCryptProcess
 	{
 		// TODO
 		// read random
+		byte[] storedRandomness = CKit.readBytes(inputFile, FileFormatV1.IV_SIZE_BYTES);
+		if(storedRandomness.length != FileFormatV1.IV_SIZE_BYTES)
+		{
+			throw new UserException("Input file is too short: " + inputFile);
+		}
+		
 		// generate key
-		// read signature
-		// validate signature
-		// read header
-		// validate header
-		// extract files
+		KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
+		km.checkError();
+		
+		XSalsaRandomAccessFile rf = new XSalsaRandomAccessFile(inputFile, false, km.key, km.iv);
+		try
+		{
+			// read initial randomness
+			byte[] initialRandomness = new byte[FileFormatV1.IV_SIZE_BYTES];
+			rf.readUnencrypted(initialRandomness);
+
+			// check if it's the same
+			if(!Arrays.equals(storedRandomness, initialRandomness))
+			{
+				throw new UserException("File replaced white reading " + inputFile);
+			}
+			
+			// read and validate signature
+			long sig = rf.readLong();
+			if(sig != FileFormatV1.SIGNATURE)
+			{
+				throw new UserException("Not a valid input file: " + inputFile);
+			}
+			
+			// read header
+			Header h = Header.read(new InputStreamWrapper(rf));
+			
+			// validate header
+			// TODO
+			
+			// extract files
+			// TODO
+		}
+		finally
+		{
+			CKit.close(rf);
+		}
 	}
 
 	
@@ -106,8 +151,8 @@ public class DirCryptProcess
 		{
 			public void run()
 			{
-				KeyMaterial k = KeyMaterial.generate(pass, storedRandomness);
-				f.complete(k);
+				KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
+				f.complete(km);
 			}
 		}.start();
 

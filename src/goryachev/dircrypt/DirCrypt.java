@@ -40,6 +40,7 @@ public class DirCrypt
 			}
 			else
 			{
+				// TODO move to validate
 				throw new UserException("Required: --enc (encrypt) or --dec (decrypt).");
 			}
 		}
