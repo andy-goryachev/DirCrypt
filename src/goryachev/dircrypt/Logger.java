@@ -47,4 +47,10 @@ public class Logger
 			lambda.run();
 		}
 	}
+	
+	
+	public void print(String text)
+	{
+		System.out.println(text);
+	}
 }

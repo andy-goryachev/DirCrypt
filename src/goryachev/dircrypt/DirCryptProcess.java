@@ -1,8 +1,8 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
 import goryachev.common.util.CKit;
-import goryachev.common.util.FileTools;
 import goryachev.common.util.Hex;
+import goryachev.common.util.SB;
 import goryachev.common.util.UserException;
 import goryachev.memsafecrypto.bc.Blake2bDigest;
 import goryachev.memsafecrypto.salsa.XSalsaRandomAccessFile;
@@ -12,6 +12,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +32,8 @@ import java.util.concurrent.Future;
 public class DirCryptProcess
 {
 	private static final int BUFFER_SIZE = 65536;
+	private static DateTimeFormatter dateFormatter;
+	private static DecimalFormat numberFormatter;
 	
 	
 	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile) throws Exception
@@ -77,7 +84,7 @@ public class DirCryptProcess
 			
 			// write files, set hash values, check for differences
 			int count = h.getEntryCount();
-			log.log("HEADER", "itemCount", count);
+			log.log("HEADER", "entryCount", count);
 			
 			for(int i=0; i<count; i++)
 			{
@@ -118,7 +125,8 @@ public class DirCryptProcess
 
 	public static void decrypt(Logger log, String pass, File inputFile, File destDir) throws Exception
 	{
-		// TODO
+		boolean listing = (destDir == null);
+		
 		// read random
 		byte[] storedRandomness = CKit.readBytes(inputFile, FileFormatV1.IV_SIZE_BYTES);
 		if(storedRandomness.length != FileFormatV1.IV_SIZE_BYTES)
@@ -165,6 +173,17 @@ public class DirCryptProcess
 			// validate header
 			// TODO
 			
+			int lenColWidth = 0;
+			if(listing)
+			{
+				numberFormatter = new DecimalFormat("#,##0");
+				
+				dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+					
+				long max = h.computeMaxFileLength();
+				lenColWidth = formatLength(max).length();
+			}
+			
 			// extract files
 			int count = h.getEntryCount();
 			for(int i=0; i<count; i++)
@@ -174,19 +193,30 @@ public class DirCryptProcess
 				// switch won't work because it creates resource not closed warning
 				if(en.getType() == EntryType.DIR)
 				{
-					File dir = new File(destDir, en.getPath());
-					dir.mkdirs();
-					// TODO check if exists?
+					if(!listing)
+					{
+						File dir = new File(destDir, en.getPath());
+						dir.mkdirs();
+						// TODO check if exists?
+					}
 				}
 				else if(en.getType() == EntryType.FILE)
 				{
-					log.log("EXTRACT", "file", en.getName());
-					byte[] hash = decryptFile(en, rf, destDir, buffer);
-					
-					// compare hash
-					if(!Arrays.equals(en.getHash(), hash))
+					if(listing)
 					{
-						throw new UserException("hash mismatch file=" + en); // TODO file path
+						String s = formatFileEntry(en, lenColWidth);
+						log.print(s);
+					}
+					else
+					{
+						log.log("EXTRACT", "file", en.getName());
+						byte[] hash = decryptFile(en, rf, destDir, buffer);
+						
+						// compare hash
+						if(!Arrays.equals(en.getHash(), hash))
+						{
+							throw new UserException("hash mismatch file=" + en); // TODO file path
+						}
 					}
 				}
 			}
@@ -271,5 +301,35 @@ public class DirCryptProcess
 				digest.update(buf, 0, rd);
 			}
 		}
+	}
+	
+	
+	private static String formatLength(long len)
+	{
+		return numberFormatter.format(len);
+	}
+	
+	
+	private static String formatDate(long time)
+	{
+		LocalDateTime t = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
+		return dateFormatter.format(t);
+	}
+	
+	
+	private static String formatFileEntry(HeaderEntry en, int width)
+	{
+		String len = formatLength(en.getFileLength());
+		String dat = formatDate(en.getLastModified());
+		String path = en.getPath();
+		
+		SB sb = new SB();
+		sb.sp(width - len.length());
+		sb.append(len);
+		sb.sp();
+		sb.append(dat);
+		sb.sp(2);
+		sb.append(path);
+		return sb.toString();
 	}
 }

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * DirCrypt Command.
  * 
- * TODO --list
+ * TODO --force 
  */
 public class DirCrypt
 {
@@ -35,6 +35,14 @@ public class DirCrypt
 				
 				DirCryptProcess.encrypt(log, pass, dirs, outFile);
 			}
+			else if(a.listing)
+			{
+				String pass = checkPassphrase(a.passPhrase);
+				String inputFile = a.inputFile;
+				File in = checkInputFile(inputFile);
+				
+				DirCryptProcess.decrypt(log, pass, in, null);
+			}
 			else if(a.decrypt)
 			{
 				String pass = checkPassphrase(a.passPhrase);
@@ -46,7 +54,7 @@ public class DirCrypt
 			}
 			else
 			{
-				throw new UserException("Required: --enc (encrypt) or --dec (decrypt).");
+				throw new UserException("Required: --enc, --dec, or --list.");
 			}
 		}
 		catch(UserException e)

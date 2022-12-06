@@ -32,10 +32,10 @@ public class Header
 		try
 		{
 			int count = rd.readInt();
-			log.log("HEADER", "itemCount", count);
+			log.log("HEADER", "entryCount", count);
 			if(count < 0)
 			{
-				throw new IOException("Format error (1)");
+				throw new IOException("Format error: entry count");
 			}
 			
 			Header h = new Header();
@@ -313,5 +313,23 @@ public class Header
 		int len = rd.readInt();
 		byte[] b = rd.readFully(len);
 		return new String(b, CKit.CHARSET_UTF8);
+	}
+	
+	
+	public long computeMaxFileLength()
+	{
+		long max = 0;
+		for(HeaderEntry en: entries)
+		{
+			if(en.getType() == EntryType.FILE)
+			{
+				long len = en.getFileLength();
+				if(len > max)
+				{
+					max = len;
+				}
+			}
+		}
+		return max;
 	}
 }
