@@ -49,27 +49,27 @@ public class FileScanner
 				
 				if(f.isDirectory())
 				{
-					log.printf("SCAN dir %s", name);
+					log.log("SCAN dir", "name", name);
 					
 					h.addDir(name);
 					scan(h, f);
 					h.addEnd();
 					
-					log.printf("SCAN dir END");
+					log.log("SCAN dir END");
 				}
 				else if(f.isFile())
 				{
 					long len = f.length();
 					long mod = f.lastModified();
 					
-					log.printf("SCAN file name=%s len=%d mod=%d", name, len, mod);
+					log.log("SCAN file", "name", name, "len", len, "modified", mod);
 					HeaderEntry en = h.addFile(name, len, mod);
 					en.setFile(f);
 				}
 				else
 				{
 					// FIX what could it be?
-					log.printf("SCAN unknown type name=%s", name);
+					log.log("SCAN unknown type", "name", name);
 				}
 			}
 		}

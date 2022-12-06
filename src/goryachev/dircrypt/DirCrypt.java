@@ -9,6 +9,8 @@ import java.util.List;
 
 /**
  * DirCrypt Command.
+ * 
+ * TODO --list
  */
 public class DirCrypt
 {
@@ -17,15 +19,18 @@ public class DirCrypt
 		try
 		{
 			CmdArgs a = CmdArgs.parse(args);
-			a.validate();
-			
+
 			Logger log = new Logger(a.verbose);
 			
-			if(a.encrypt)
+			if(a.usage)
+			{
+				System.out.println(CmdArgs.usage());
+				System.exit(0);
+			}
+			else if(a.encrypt)
 			{
 				String pass = checkPassphrase(a.passPhrase);
-				String s = a.outputDir;
-				File outFile = checkOutputFile(s);
+				File outFile = checkOutputFile(a.outputFile);
 				List<File> dirs = checkDirectories(a.dirs);
 				
 				DirCryptProcess.encrypt(log, pass, dirs, outFile);
@@ -35,29 +40,23 @@ public class DirCrypt
 				String pass = checkPassphrase(a.passPhrase);
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
+				File destDir = checkDestDir(a.destination);
 				
-				DirCryptProcess.decrypt(log, pass, in);
+				DirCryptProcess.decrypt(log, pass, in, destDir);
 			}
 			else
 			{
-				// TODO move to validate
 				throw new UserException("Required: --enc (encrypt) or --dec (decrypt).");
 			}
 		}
 		catch(UserException e)
 		{
 			System.out.println(e.getMessage());
-			System.out.println("\n");
-			System.out.println(CmdArgs.usage());
-			
 			System.exit(-1);
 		}
 		catch(Throwable e)
 		{
 			e.printStackTrace(System.out);
-			System.out.println("\n");
-			System.out.println(CmdArgs.usage());
-
 			System.exit(-2);
 		}
 	}
@@ -129,6 +128,25 @@ public class DirCrypt
 			return f;
 		}
 		throw err("Missing output file");
+	}
+	
+	
+	private static File checkDestDir(String dir)
+	{
+		if(CKit.isBlank(dir))
+		{
+			throw err("Missing destination directory");
+		}
+		
+		File f = new File(dir);
+		f.mkdirs();
+		
+		if(f.exists() && f.isDirectory())
+		{
+			return f;
+		}
+		
+		throw err("Unable to create destination directory: " + dir);
 	}
 
 

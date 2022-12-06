@@ -1,6 +1,7 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
 import goryachev.common.io.DWriter;
+import goryachev.common.util.SB;
 import java.io.File;
 import java.io.IOException;
 
@@ -22,6 +23,8 @@ public abstract class HeaderEntry
 	
 	public long getFileLength() { return -1L; }
 	
+	public byte[] getHash() { throw new UnsupportedOperationException(); }
+	
 	public void setHash(byte[] hash) { throw new UnsupportedOperationException(); }
 	
 	public File getFile() { throw new UnsupportedOperationException(); }
@@ -33,9 +36,46 @@ public abstract class HeaderEntry
 	private transient HeaderEntry parent;
 	
 	
+	public HeaderEntry()
+	{
+	}
+	
+	
+	public void setParent(HeaderEntry p)
+	{
+		this.parent = p;
+	}
+	
+	
+	public HeaderEntry getParent()
+	{
+		return parent;
+	}
+	
+	
 	public String toString()
 	{
 		String name = getName();
 		return getType() + (name == null ? "" : " " + name);
+	}
+	
+
+	public String getPath()
+	{
+		SB sb = new SB();
+		collectPath(sb);
+		return sb.toString();
+	}
+
+	
+	protected void collectPath(SB sb)
+	{
+		if(parent != null)
+		{
+			parent.collectPath(sb);
+			sb.append("/");
+		}
+		
+		sb.append(getName());
 	}
 }

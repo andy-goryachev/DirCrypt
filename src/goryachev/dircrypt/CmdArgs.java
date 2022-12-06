@@ -14,9 +14,11 @@ public class CmdArgs
 	public boolean decrypt;
 	public boolean force;
 	public String inputFile;
-	public String outputDir;
+	public String outputFile;
+	public String destination;
 	public String passPhrase;
 	public boolean verbose;
+	public boolean usage;
 	
 	
 	private CmdArgs()
@@ -39,17 +41,23 @@ public class CmdArgs
 				case "--dec":
 					a.decrypt = true;
 					break;
+				case "--dest":
+					a.destination = p.nextToken();
+					break;
 				case "--enc":
 					a.encrypt = true;
 					break;
 				case "--force":
 					a.force = true;
 					break;
+				case "--help":
+					a.usage = true;
+					break;
 				case "--in":
 					a.inputFile = p.nextToken();
 					break;
 				case "--out":
-					a.outputDir = p.nextToken();
+					a.outputFile = p.nextToken();
 					break;
 				case "--pass":
 					a.passPhrase = p.nextToken();
@@ -73,22 +81,18 @@ public class CmdArgs
 	public static String usage()
 	{
 		return
-			"Usage:\n" +
+			"USAGE\n" +
 			"Encrypt:\n" +
 			"  java -jar dirCrypt.jar --enc --out FILE [options] dir1 dir2 ...\n" +
 			"Decrypt:\n" +
-			"  java -jar dirCrypt.jar --dec --in FILE [options]\n" +
+			"  java -jar dirCrypt.jar --dec --in FILE [options] --dest OUTDIR\n" +
 			"Options:\n" +
+			"  --dest DESTINATION_DIRECTORY\n" +
+			"  --help\n" +
 			"  --in INPUT_FILE\n" +
-			"  --out OUTPUT_DIRECTORY\n" +
+			"  --out OUTPUT_FILE\n" +
 			"  --pass PASSPHRASE\n" +
-			"  --verbose log messages to stdout\n" +
+			"  --verbose log diagnostic messages to stdout\n" +
 			"";
-	}
-
-
-	public void validate()
-	{
-		// TODO
 	}
 }

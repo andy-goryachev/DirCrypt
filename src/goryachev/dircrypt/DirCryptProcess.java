@@ -1,12 +1,15 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
 import goryachev.common.util.CKit;
+import goryachev.common.util.FileTools;
+import goryachev.common.util.Hex;
 import goryachev.common.util.UserException;
 import goryachev.memsafecrypto.bc.Blake2bDigest;
 import goryachev.memsafecrypto.salsa.XSalsaRandomAccessFile;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -17,6 +20,9 @@ import java.util.concurrent.Future;
 
 /**
  * Dir Crypt Process.
+ * 
+ * TODO log elapsed time
+ * TODO log data size
  */
 public class DirCryptProcess
 {
@@ -40,6 +46,7 @@ public class DirCryptProcess
 
 		FileScanner fs = new FileScanner(log, dirs);
 		Header h = fs.scan();
+		log.log("HEADER CREATED", "itemCount", h.getEntryCount());
 		
 		KeyMaterial km = futureKey.get();
 		km.checkError();
@@ -55,27 +62,35 @@ public class DirCryptProcess
 			
 			// write signature
 			rf.writeLong(FileFormatV1.SIGNATURE);
+						
+			// write header-size byte array
+			int size = h.getLengthInBytes();
+			log.log("HEADER", "size", size);
+			rf.writeInt(size);
 			
 			// store offset
 			// TODO use file offset?
-			long offset = rnd.length + 8;
+			long offset = rnd.length + 8 + 4;
 			
-			// write header-size byte array
-			int sz = h.getLengthInBytes();
-			byte[] nullHeader = new byte[sz];
+			byte[] nullHeader = new byte[size];
 			rf.write(nullHeader);
 			
 			// write files, set hash values, check for differences
 			int count = h.getEntryCount();
+			log.log("HEADER", "itemCount", count);
+			
 			for(int i=0; i<count; i++)
 			{
 				HeaderEntry en = h.getEntry(i);
 				
 				if(en.getType() == EntryType.FILE)
 				{
-					log.log("READ", "file", en.getName());
-					byte[] hash = writeFile(en, rf, buffer);
+					log.log("ENCRYPT", "file", en.getName());
+					byte[] hash = encryptFile(en, rf, buffer);
 					en.setHash(hash);
+					log.log(() -> {
+						log.log("HASH", "name", en.getName(), "hash", Hex.toHexString(hash));
+					});
 				}
 			}
 			
@@ -101,7 +116,7 @@ public class DirCryptProcess
 	}
 
 
-	public static void decrypt(Logger log, String pass, File inputFile) throws Exception
+	public static void decrypt(Logger log, String pass, File inputFile, File destDir) throws Exception
 	{
 		// TODO
 		// read random
@@ -114,6 +129,8 @@ public class DirCryptProcess
 		// generate key
 		KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
 		km.checkError();
+		
+		byte[] buffer = new byte[BUFFER_SIZE];
 		
 		XSalsaRandomAccessFile rf = new XSalsaRandomAccessFile(inputFile, false, km.key, km.iv);
 		try
@@ -136,13 +153,43 @@ public class DirCryptProcess
 			}
 			
 			// read header
-			Header h = Header.read(new InputStreamWrapper(rf));
+			int size = rf.readInt();
+			log.log("HEADER", "size", size);
+			if(size < 0)
+			{
+				throw new Exception("Format error: header size");
+			}
+			Header h = Header.read(log, new InputStreamWrapper(rf, size));
+			log.log("READ header");
 			
 			// validate header
 			// TODO
 			
 			// extract files
-			// TODO
+			int count = h.getEntryCount();
+			for(int i=0; i<count; i++)
+			{
+				HeaderEntry en = h.getEntry(i);
+				
+				// switch won't work because it creates resource not closed warning
+				if(en.getType() == EntryType.DIR)
+				{
+					File dir = new File(destDir, en.getPath());
+					dir.mkdirs();
+					// TODO check if exists?
+				}
+				else if(en.getType() == EntryType.FILE)
+				{
+					log.log("EXTRACT", "file", en.getName());
+					byte[] hash = decryptFile(en, rf, destDir, buffer);
+					
+					// compare hash
+					if(!Arrays.equals(en.getHash(), hash))
+					{
+						throw new UserException("hash mismatch file=" + en); // TODO file path
+					}
+				}
+			}
 		}
 		finally
 		{
@@ -150,7 +197,7 @@ public class DirCryptProcess
 		}
 	}
 
-	
+
 	private static Future<KeyMaterial> generateKey(String pass, byte[] storedRandomness)
 	{
 		CompletableFuture<KeyMaterial> f = new CompletableFuture();
@@ -168,7 +215,7 @@ public class DirCryptProcess
 	}
 	
 	
-	private static byte[] writeFile(HeaderEntry en, XSalsaRandomAccessFile rf, byte[] buf) throws Exception
+	private static byte[] encryptFile(HeaderEntry en, XSalsaRandomAccessFile rf, byte[] buf) throws Exception
 	{
 		File f = en.getFile();
 
@@ -176,28 +223,52 @@ public class DirCryptProcess
 		{
 			try(OutputStream out = new OutputStreamWrapper(rf))
 			{
-				Blake2bDigest digest = new Blake2bDigest(FileFormatV1.FILE_HASH_SIZE_BYTES);
+				return copyWithDigest(in, out, buf);
+			}
+		}
+	}
+	
+	
+	private static byte[] decryptFile(HeaderEntry en, XSalsaRandomAccessFile rf, File destDir, byte[] buf) throws Exception
+	{
+		String path = en.getPath();
+		File f = new File(destDir, path);
 
-				for(;;)
-				{
-					if(Thread.interrupted())
-					{
-						throw new InterruptedException();
-					}
-					
-					int rd = in.read(buf);
-					if(rd < 0)
-					{
-						byte[] b = new byte[FileFormatV1.FILE_HASH_SIZE_BYTES];
-						digest.doFinal(b, 0);
-						return b;
-					}
-					else if(rd > 0)
-					{
-						out.write(buf, 0, rd);
-						digest.update(buf, 0, rd);
-					}
-				}
+		// TODO check if exists
+		
+		long len = en.getFileLength();
+		try(InputStream in = new InputStreamWrapper(rf, len))
+		{
+			try(OutputStream out = new FileOutputStream(f))
+			{
+				return copyWithDigest(in, out, buf);
+			}
+		}
+	}
+	
+	
+	private static byte[] copyWithDigest(InputStream in, OutputStream out, byte[] buf) throws Exception
+	{
+		Blake2bDigest digest = new Blake2bDigest(FileFormatV1.FILE_HASH_SIZE_BITS);
+
+		for(;;)
+		{
+			if(Thread.interrupted())
+			{
+				throw new InterruptedException();
+			}
+			
+			int rd = in.read(buf);
+			if(rd < 0)
+			{
+				byte[] b = new byte[FileFormatV1.FILE_HASH_SIZE_BYTES];
+				digest.doFinal(b, 0);
+				return b;
+			}
+			else if(rd > 0)
+			{
+				out.write(buf, 0, rd);
+				digest.update(buf, 0, rd);
 			}
 		}
 	}

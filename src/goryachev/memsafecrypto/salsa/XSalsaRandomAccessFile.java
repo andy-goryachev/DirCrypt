@@ -100,13 +100,6 @@ public class XSalsaRandomAccessFile
 		} while(read < len);
 	}
 
-
-	public long readLong() throws IOException
-	{
-		readFully(databuf, 0, 8);
-		return CIOTools.bytesToLong(databuf);
-	}
-	
 	
 	public int readByte() throws IOException
 	{
@@ -133,6 +126,27 @@ public class XSalsaRandomAccessFile
 	{
 		databuf[0] = (byte)x;
 		write(databuf, 0, 1);
+	}
+	
+
+	public int readInt() throws IOException
+	{
+		readFully(databuf, 0, 4);
+		return CIOTools.bytesToInt(databuf);
+	}
+	
+	
+	public void writeInt(int x) throws IOException
+	{
+		CIOTools.intToBytes(databuf, x);
+		write(databuf, 0, 4);
+	}
+	
+	
+	public long readLong() throws IOException
+	{
+		readFully(databuf, 0, 8);
+		return CIOTools.bytesToLong(databuf);
 	}
 	
 	

@@ -4,6 +4,7 @@ import goryachev.common.io.DReader;
 import goryachev.common.io.DWriter;
 import goryachev.common.util.CKit;
 import goryachev.common.util.CList;
+import goryachev.common.util.Hex;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,7 @@ import java.io.OutputStream;
 public class Header
 {
 	private final CList<HeaderEntry> entries = new CList<>();
+	private transient HeaderEntry lastDir;
 	
 	
 	public Header()
@@ -23,42 +25,49 @@ public class Header
 	}
 	
 	
-	// FIX reading unathenticated data, might run into size problem
-	public static Header read(InputStream in) throws IOException
+	// FIX reading unathenticated data, check for: sizes, counts, string lendths
+	public static Header read(Logger log, InputStream in) throws IOException
 	{
 		DReader rd = new DReader(in);
 		try
 		{
-			int size = rd.readInt();
-			if(size < 0)
+			int count = rd.readInt();
+			log.log("HEADER", "itemCount", count);
+			if(count < 0)
 			{
 				throw new IOException("Format error (1)");
 			}
 			
 			Header h = new Header();
-			for(int i=0; i<size; i++)
+			for(int i=0; i<count; i++)
 			{
 				int type = rd.readByte();
 				switch(type)
 				{
 				case FileFormatV1.TYPE_DIR:
 					{
-						String name = rd.readString();
+						String name = readString(rd);
 						h.addDir(name);
+						log.log("HEADER file", "name", name);
 					}
 					break;
 				case FileFormatV1.TYPE_END:
 					h.addEnd();
+					log.log("HEADER dir END");
 					break;
 				case FileFormatV1.TYPE_FILE:
 					{
-						String name = rd.readString();
+						String name = readString(rd);
 						long len = rd.readLong();
 						long mod = rd.readLong();
 						byte[] hash = rd.readNBytes(FileFormatV1.FILE_HASH_SIZE_BYTES);
 						
 						HeaderEntry en = h.addFile(name, len, mod);
 						en.setHash(hash);
+						log.log(() ->
+						{
+							log.log("HEADER file", "name", name, "len", len, "modified", mod, "hash", Hex.toHexString(hash));
+						});
 					}
 					break;
 				default:
@@ -107,10 +116,10 @@ public class Header
 		DWriter wr = new DWriter(out);
 		try
 		{
-			int size = entries.size();
-			wr.writeInt(size);
+			int count = entries.size();
+			wr.writeInt(count);
 			
-			for(int i=0; i<size; i++)
+			for(int i=0; i<count; i++)
 			{
 				HeaderEntry en = entries.get(i);
 				en.write(wr);
@@ -133,7 +142,7 @@ public class Header
 
 	public void addDir(String name)
 	{
-		add(new HeaderEntry()
+		HeaderEntry en = new HeaderEntry()
 		{
 			public EntryType getType()
 			{
@@ -149,16 +158,24 @@ public class Header
 
 			public int getLength()
 			{
-				return 1 + CKit.getBytes(name).length;
+				return 1 + stringLength(name);
 			}
 			
 			
 			public void write(DWriter wr) throws IOException
 			{
 				wr.writeByte(FileFormatV1.TYPE_DIR);
-				wr.writeString(name);
+				writeString(wr, name);
 			}
-		});
+		};
+
+		if(lastDir != null)
+		{
+			en.setParent(lastDir);
+		}
+		lastDir = en;
+
+		add(en);
 	}
 	
 
@@ -183,6 +200,8 @@ public class Header
 				wr.writeByte(FileFormatV1.TYPE_END);
 			}
 		});
+		
+		lastDir = lastDir.getParent(); 
 	}
 
 
@@ -224,6 +243,12 @@ public class Header
 			}
 			
 			
+			public byte[] getHash()
+			{
+				return hash;
+			}
+			
+			
 			public void setHash(byte[] hash)
 			{
 				this.hash = hash;
@@ -244,7 +269,7 @@ public class Header
 
 			public int getLength()
 			{
-				return OVERHEAD + CKit.getBytes(name).length;
+				return OVERHEAD + stringLength(name);
 			}
 			
 			
@@ -256,13 +281,37 @@ public class Header
 				}
 				
 				wr.writeByte(FileFormatV1.TYPE_FILE);
-				wr.writeString(name);
+				writeString(wr, name);
 				wr.writeLong(len);
 				wr.writeLong(mod);
 				wr.write(hash);
 			}
 		};
+		
+		en.setParent(lastDir);
 		add(en);
 		return en;
+	}
+	
+	
+	protected static int stringLength(String s)
+	{
+		return 4 + CKit.getBytes(s).length;
+	}
+	
+	
+	protected static void writeString(DWriter wr, String s) throws IOException
+	{
+		byte[] b = CKit.getBytes(s);
+		wr.writeInt(b.length);
+		wr.write(b);
+	}
+	
+	
+	protected static String readString(DReader rd) throws IOException
+	{
+		int len = rd.readInt();
+		byte[] b = rd.readFully(len);
+		return new String(b, CKit.CHARSET_UTF8);
 	}
 }

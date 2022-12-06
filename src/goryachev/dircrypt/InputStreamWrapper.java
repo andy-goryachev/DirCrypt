@@ -12,22 +12,45 @@ public class InputStreamWrapper
 	extends InputStream
 {
 	private final XSalsaRandomAccessFile file;
+	private long available;
 	
 	
-	public InputStreamWrapper(XSalsaRandomAccessFile f)
+	public InputStreamWrapper(XSalsaRandomAccessFile f, long length)
 	{
 		this.file = f;
+		this.available = length;
 	}
 
 
 	public int read() throws IOException
 	{
-		return file.readByte();
+		if(available == 0)
+		{
+			return -1;
+		}
+		
+		int rv = file.readByte();
+		if(rv >= 0)
+		{
+			available--;
+		}
+		return rv;
 	}
 	
 	
-	public int read(byte[] b, int off, int len) throws IOException
+	public int read(byte[] b, int off, int length) throws IOException
 	{
-		return file.read(b, off, len);
+		if(available == 0)
+		{
+			return -1;
+		}
+		
+		int len = (int)Math.min(available, length);
+		int rv = file.read(b, off, len);
+		if(rv > 0)
+		{
+			available -= rv;
+		}
+		return rv;
 	}
 }

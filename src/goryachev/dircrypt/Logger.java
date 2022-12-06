@@ -1,6 +1,7 @@
 // Copyright © 2022 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
 import goryachev.common.util.SB;
+import java.util.function.Consumer;
 
 
 /**
@@ -39,12 +40,11 @@ public class Logger
 	}
 	
 	
-	public void printf(String fmt, Object ... args)
+	public void log(Runnable lambda)
 	{
 		if(on)
 		{
-			String msg = String.format(fmt, args);
-			System.out.println(msg);
+			lambda.run();
 		}
 	}
 }

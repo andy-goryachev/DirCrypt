@@ -38,5 +38,6 @@ public final class FileFormatV1
 	public static final int TYPE_DIR = 0x00;
 	public static final int TYPE_END = 0x01;
 	public static final int TYPE_FILE = 0x02;
-	public static final int FILE_HASH_SIZE_BYTES = 256/8;
+	public static final int FILE_HASH_SIZE_BITS = 256;
+	public static final int FILE_HASH_SIZE_BYTES = FILE_HASH_SIZE_BITS/8;
 }
