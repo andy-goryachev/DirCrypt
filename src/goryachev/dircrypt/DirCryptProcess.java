@@ -36,7 +36,7 @@ public class DirCryptProcess
 	private static DecimalFormat numberFormatter;
 	
 	
-	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile) throws Exception
+	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile, boolean force) throws Exception
 	{
 		// create a temp file before generating any key material
 		File parent = outFile.getParentFile();
@@ -49,7 +49,7 @@ public class DirCryptProcess
 		File f = File.createTempFile("DirCrypt.", null, parent);
 
 		// generate key while scanning the file system
-		Future<KeyMaterial> futureKey = generateKey(pass, null);
+		Future<KeyMaterial> futureKey = generateKey(log, pass, null);
 
 		FileScanner fs = new FileScanner(log, dirs);
 		Header h = fs.scan();
@@ -113,6 +113,18 @@ public class DirCryptProcess
 		finally
 		{
 			CKit.close(rf);
+		}
+		
+		if(force)
+		{
+			if(outFile.exists())
+			{
+				boolean success = outFile.delete();
+				if(!success)
+				{
+					throw new UserException("Unable to delete output file " + outFile);
+				}
+			}
 		}
 		
 		boolean success = f.renameTo(outFile);
@@ -228,7 +240,7 @@ public class DirCryptProcess
 	}
 
 
-	private static Future<KeyMaterial> generateKey(String pass, byte[] storedRandomness)
+	private static Future<KeyMaterial> generateKey(Logger log, String pass, byte[] storedRandomness)
 	{
 		CompletableFuture<KeyMaterial> f = new CompletableFuture();
 		
@@ -236,8 +248,12 @@ public class DirCryptProcess
 		{
 			public void run()
 			{
+				long start = System.nanoTime();
 				KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
 				f.complete(km);
+				log.log(() -> {
+					log.log("KEY generated", "elapsed", (System.nanoTime() - start)/1_000_000_000); 	
+				});
 			}
 		}.start();
 

@@ -30,10 +30,10 @@ public class DirCrypt
 			else if(a.encrypt)
 			{
 				String pass = checkPassphrase(a.passPhrase);
-				File outFile = checkOutputFile(a.outputFile);
+				File outFile = checkOutputFile(log, a.outputFile, a.force);
 				List<File> dirs = checkDirectories(a.dirs);
 				
-				DirCryptProcess.encrypt(log, pass, dirs, outFile);
+				DirCryptProcess.encrypt(log, pass, dirs, outFile, a.force);
 			}
 			else if(a.listing)
 			{
@@ -123,15 +123,21 @@ public class DirCrypt
 	}
 	
 	
-	private static File checkOutputFile(String fname)
+	private static File checkOutputFile(Logger log, String fname, boolean force)
 	{
 		if(CKit.isNotBlank(fname))
 		{
 			File f = new File(fname);
 			if(f.exists())
 			{
-				// TODO overwrite option?
-				throw err("File already exists: " + f);
+				if(force)
+				{
+					log.log("DEST file exists: " + f);
+				}
+				else
+				{
+					throw err("File already exists: " + f);
+				}
 			}
 			return f;
 		}

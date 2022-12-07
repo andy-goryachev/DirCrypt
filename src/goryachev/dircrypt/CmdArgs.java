@@ -94,6 +94,7 @@ public class CmdArgs
 			"  java -jar DirCrypt.jar --list --in FILE --list\n" +
 			"Options:\n" +
 			"  --dest DESTINATION_DIRECTORY\n" +
+			"  --force overwrite files\n" +
 			"  --help\n" +
 			"  --in INPUT_FILE\n" +
 			"  --list list file contents\n" +

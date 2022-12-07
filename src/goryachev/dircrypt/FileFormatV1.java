@@ -26,8 +26,11 @@ public final class FileFormatV1
 	public static final int SALT_SIZE_BYTES = 256/8;
 
 	// TODO increase!
+	/** cpu/memory cost */
 //	public static final int SCRYPT_N = 16384;
+	/** block mix size parameter */
 //	public static final int SCRYPT_R = 8;
+	/** parallelization parameter */
 //	public static final int SCRYPT_P = 32;
 	
 	// FIX remove, for debugging only
