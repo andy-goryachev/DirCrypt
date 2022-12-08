@@ -41,7 +41,7 @@ public class DirCrypt
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
 				
-				DirCryptProcess.decrypt(log, pass, in, null);
+				DirCryptProcess.decrypt(log, pass, in, null, false);
 			}
 			else if(a.decrypt)
 			{
@@ -50,7 +50,7 @@ public class DirCrypt
 				File in = checkInputFile(inputFile);
 				File destDir = checkDestDir(a.destination);
 				
-				DirCryptProcess.decrypt(log, pass, in, destDir);
+				DirCryptProcess.decrypt(log, pass, in, destDir, a.force);
 			}
 			else
 			{

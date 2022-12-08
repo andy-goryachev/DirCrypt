@@ -46,7 +46,7 @@ public class DirCryptProcess
 			throw new UserException("Unable to create output directory " + parent);
 		}
 		
-		File f = File.createTempFile("DirCrypt.", null, parent);
+		File file = File.createTempFile("DirCrypt.", null, parent);
 
 		// generate key while scanning the file system
 		Future<KeyMaterial> futureKey = generateKey(log, pass, null);
@@ -60,7 +60,7 @@ public class DirCryptProcess
 		
 		byte[] buffer = new byte[BUFFER_SIZE];
 		
-		XSalsaRandomAccessFile rf = new XSalsaRandomAccessFile(f, true, km.key, km.iv);
+		XSalsaRandomAccessFile rf = new XSalsaRandomAccessFile(file, true, km.key, km.iv);
 		try
 		{
 			// write random
@@ -92,10 +92,13 @@ public class DirCryptProcess
 				
 				if(en.getType() == EntryType.FILE)
 				{
-					log.log("ENCRYPT", "file", en.getName());
-					byte[] hash = encryptFile(en, rf, buffer);
+					File f = en.getFile();
+					log.log("ENCRYPT", "file", f, "len", en.getFileLength(), "modified", en.getLastModified());
+
+					byte[] hash = encryptFile(file, rf, buffer);
 					en.setHash(hash);
-					log.log(() -> {
+					log.log(() ->
+					{
 						log.log("HASH", "name", en.getName(), "hash", Hex.toHexString(hash));
 					});
 				}
@@ -127,15 +130,15 @@ public class DirCryptProcess
 			}
 		}
 		
-		boolean success = f.renameTo(outFile);
+		boolean success = file.renameTo(outFile);
 		if(!success)
 		{
-			throw new UserException("Unable to rename temp file " + f + " to " + outFile);
+			throw new UserException("Unable to rename temp file " + file + " to " + outFile);
 		}
 	}
 
 
-	public static void decrypt(Logger log, String pass, File inputFile, File destDir) throws Exception
+	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force) throws Exception
 	{
 		boolean listing = (destDir == null);
 		
@@ -169,7 +172,7 @@ public class DirCryptProcess
 			long sig = rf.readLong();
 			if(sig != FileFormatV1.SIGNATURE)
 			{
-				throw new UserException("Not a valid input file: " + inputFile);
+				throw new UserException("Invalid passphrase or not an encrypted file: " + inputFile);
 			}
 			
 			// read header
@@ -221,12 +224,27 @@ public class DirCryptProcess
 					}
 					else
 					{
-						log.log("EXTRACT", "file", en.getName());
-						byte[] hash = decryptFile(en, rf, destDir, buffer);
+						String path = en.getPath();
+						File f = new File(destDir, path);
+
+						// check if exists
+						if(!force)
+						{
+							if(f.exists())
+							{
+								throw new UserException("File exists: " + f);
+							}
+						}
+
+						long len = en.getFileLength();
+						log.log("EXTRACT", "file", f, "length", len);
+						
+						byte[] hash = decryptFile(f, rf, destDir, buffer, len);
 						
 						// compare hash
 						if(!Arrays.equals(en.getHash(), hash))
 						{
+							// TODO delete file?
 							throw new UserException("hash mismatch file=" + en); // TODO file path
 						}
 					}
@@ -251,7 +269,8 @@ public class DirCryptProcess
 				long start = System.nanoTime();
 				KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
 				f.complete(km);
-				log.log(() -> {
+				log.log(() ->
+				{
 					log.log("KEY generated", "elapsed", (System.nanoTime() - start)/1_000_000_000); 	
 				});
 			}
@@ -261,10 +280,8 @@ public class DirCryptProcess
 	}
 	
 	
-	private static byte[] encryptFile(HeaderEntry en, XSalsaRandomAccessFile rf, byte[] buf) throws Exception
+	private static byte[] encryptFile(File f, XSalsaRandomAccessFile rf, byte[] buf) throws Exception
 	{
-		File f = en.getFile();
-
 		try(InputStream in = new BufferedInputStream(new FileInputStream(f)))
 		{
 			try(OutputStream out = new OutputStreamWrapper(rf))
@@ -275,14 +292,8 @@ public class DirCryptProcess
 	}
 	
 	
-	private static byte[] decryptFile(HeaderEntry en, XSalsaRandomAccessFile rf, File destDir, byte[] buf) throws Exception
+	private static byte[] decryptFile(File f, XSalsaRandomAccessFile rf, File destDir, byte[] buf, long len) throws Exception
 	{
-		String path = en.getPath();
-		File f = new File(destDir, path);
-
-		// TODO check if exists
-		
-		long len = en.getFileLength();
 		try(InputStream in = new InputStreamWrapper(rf, len))
 		{
 			try(OutputStream out = new FileOutputStream(f))
