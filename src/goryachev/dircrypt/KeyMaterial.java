@@ -5,6 +5,7 @@ import goryachev.memsafecrypto.CByteArray;
 import goryachev.memsafecrypto.bc.Blake2bDigest;
 import goryachev.memsafecrypto.bc.SCrypt;
 import java.security.SecureRandom;
+import java.text.DecimalFormat;
 
 
 /**
@@ -27,8 +28,10 @@ public class KeyMaterial
 	}
 	
 	
-	public static KeyMaterial generate(String pass, byte[] storedRandomness)
+	public static KeyMaterial generate(Logger log, String pass, byte[] storedRandomness)
 	{
+		long start = System.nanoTime();
+
 		try
 		{
 			byte[] b = storedRandomness;
@@ -65,6 +68,14 @@ public class KeyMaterial
 		catch(Throwable e)
 		{
 			return new KeyMaterial(null, null, null, new Exception(e));
+		}
+		finally
+		{
+			log.log(() ->
+			{
+				String elapsed = new DecimalFormat("#0.0s").format((System.nanoTime() - start)/1_000_000_000.0);
+				log.log("KEY generated", "elapsed", elapsed); 	
+			});
 		}
 	}
 	

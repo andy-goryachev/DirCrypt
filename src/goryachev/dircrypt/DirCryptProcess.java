@@ -95,7 +95,7 @@ public class DirCryptProcess
 					File f = en.getFile();
 					log.log("ENCRYPT", "file", f, "len", en.getFileLength(), "modified", en.getLastModified());
 
-					byte[] hash = encryptFile(file, rf, buffer);
+					byte[] hash = encryptFile(f, rf, buffer);
 					en.setHash(hash);
 					log.log(() ->
 					{
@@ -150,7 +150,7 @@ public class DirCryptProcess
 		}
 		
 		// generate key
-		KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
+		KeyMaterial km = KeyMaterial.generate(log, pass, storedRandomness);
 		km.checkError();
 		
 		byte[] buffer = new byte[BUFFER_SIZE];
@@ -266,13 +266,8 @@ public class DirCryptProcess
 		{
 			public void run()
 			{
-				long start = System.nanoTime();
-				KeyMaterial km = KeyMaterial.generate(pass, storedRandomness);
+				KeyMaterial km = KeyMaterial.generate(log, pass, storedRandomness);
 				f.complete(km);
-				log.log(() ->
-				{
-					log.log("KEY generated", "elapsed", (System.nanoTime() - start)/1_000_000_000); 	
-				});
 			}
 		}.start();
 
