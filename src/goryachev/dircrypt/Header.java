@@ -47,12 +47,12 @@ public class Header
 					{
 						String name = readString(rd);
 						h.addDir(name);
-						log.log("HEADER file", "name", name);
+						log.log("HEADER dir", "name", name);
 					}
 					break;
 				case FileFormatV1.TYPE_END:
 					h.addEnd();
-					log.log("HEADER dir END");
+					log.log("HEADER enddir");
 					break;
 				case FileFormatV1.TYPE_FILE:
 					{

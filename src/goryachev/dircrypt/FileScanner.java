@@ -55,7 +55,7 @@ public class FileScanner
 					scan(h, f);
 					h.addEnd();
 					
-					log.log("SCAN dir END");
+					log.log("SCAN enddir");
 				}
 				else if(f.isFile())
 				{
