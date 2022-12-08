@@ -77,7 +77,7 @@ public class FileScanner
 	
 	protected Comparator<File> getFileComparator()
 	{
-		return new CComparator<>()
+		return new CComparator<File>()
 		{
 			public int compare(File a, File b)
 			{
