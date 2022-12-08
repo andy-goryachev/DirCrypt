@@ -19,16 +19,16 @@ import java.security.SecureRandom;
  */
 public final class FileFormatV1
 {
-	public static final long SIGNATURE = 0x1DEA_2022_1204_1420L;
+	public static final long SIGNATURE = 0x1DEA_2022_1207_2130L;
 	
 	public static final int KEY_SIZE_BYTES = 256/8;
 	public static final int IV_SIZE_BYTES = 192/8;
 	public static final int SALT_SIZE_BYTES = 256/8;
 
 	/** cpu/memory cost */
-	public static final int SCRYPT_N = 16384;
+	public static final int SCRYPT_N = 32768;
 	/** block mix size parameter */
-	public static final int SCRYPT_R = 8;
+	public static final int SCRYPT_R = 16;
 	/** parallelization parameter */
 	public static final int SCRYPT_P = 32;
 	
