@@ -68,7 +68,6 @@ public class FileScanner
 				}
 				else
 				{
-					// FIX what could it be?
 					log.log("SCAN unknown type", "name", name);
 				}
 			}

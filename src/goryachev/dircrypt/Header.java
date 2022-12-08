@@ -25,7 +25,6 @@ public class Header
 	}
 	
 	
-	// FIX reading unathenticated data, check for: sizes, counts, string lendths
 	public static Header read(Logger log, InputStream in) throws IOException
 	{
 		DReader rd = new DReader(in);

@@ -182,6 +182,7 @@ public class DirCryptProcess
 			{
 				throw new Exception("Format error: header size");
 			}
+			// FIX reading unathenticated data, check for: sizes, counts, string lengths
 			Header h = Header.read(log, new InputStreamWrapper(rf, size));
 			log.log("READ header");
 			
@@ -212,7 +213,6 @@ public class DirCryptProcess
 					{
 						File dir = new File(destDir, en.getPath());
 						dir.mkdirs();
-						// TODO check if exists?
 					}
 				}
 				else if(en.getType() == EntryType.FILE)

@@ -9,8 +9,6 @@ import java.util.List;
 
 /**
  * DirCrypt Command.
- * 
- * TODO --force 
  */
 public class DirCrypt
 {
