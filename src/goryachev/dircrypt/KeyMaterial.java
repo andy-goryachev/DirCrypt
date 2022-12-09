@@ -28,8 +28,10 @@ public class KeyMaterial
 	}
 	
 	
-	public static KeyMaterial generate(Logger log, String pass, byte[] storedRandomness)
+	public static KeyMaterial generate(Logger log, String pass, byte[] storedRandomness, int N, int R, int P)
 	{
+		log.log("KEY parameters", "scryptN", N, "scryptR", R, "scryptP", P);
+		
 		long start = System.nanoTime();
 
 		try
@@ -48,17 +50,13 @@ public class KeyMaterial
 			
 			CByteArray pw = CByteArray.readOnly(pass.getBytes(CKit.CHARSET_UTF8));
 			
-			int n = FileFormatV1.SCRYPT_N;
-			int r = FileFormatV1.SCRYPT_R;
-			int p = FileFormatV1.SCRYPT_P;
-			
 			// generate key with scrypt
 			// P - passphrase
 			// S - salt
-			// N - cpu/memory cost
+			// N - cpu/memory cost. Cost parameter N must be > 1 and a power of 2
 			// r - block mix size parameter
 			// p - parallelization parameter
-			CByteArray k = SCrypt.generate(pw, salt, n, r, p, FileFormatV1.KEY_SIZE_BYTES);
+			CByteArray k = SCrypt.generate(pw, salt, N, R, P, FileFormatV1.KEY_SIZE_BYTES);
 			return new KeyMaterial(k, salt, iv, null);
 		}
 		catch(Exception e)

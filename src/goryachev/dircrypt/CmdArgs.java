@@ -20,6 +20,9 @@ public class CmdArgs
 	public boolean listing;
 	public boolean verbose;
 	public boolean usage;
+	public String N;
+	public String R;
+	public String P;
 	
 	
 	private CmdArgs()
@@ -69,6 +72,15 @@ public class CmdArgs
 				case "--verbose":
 					a.verbose = true;
 					break;
+				case "--scryptN":
+					a.N = p.nextToken();
+					break;
+				case "--scryptP":
+					a.P = p.nextToken();
+					break;
+				case "--scryptR":
+					a.R = p.nextToken();
+					break;
 				default:
 					throw new UserException("Unrecognized option: " + tok);
 				}
@@ -94,13 +106,16 @@ public class CmdArgs
 			"  java -jar DirCrypt.jar --list --in FILE --list\n" +
 			"Options:\n" +
 			"  --dest DESTINATION_DIRECTORY\n" +
-			"  --force overwrite files\n" +
+			"  --force - overwrite files\n" +
 			"  --help\n" +
 			"  --in INPUT_FILE\n" +
-			"  --list list file contents\n" +
+			"  --list - list file contents\n" +
 			"  --out OUTPUT_FILE\n" +
 			"  --pass PASSPHRASE\n" +
-			"  --verbose log diagnostic messages to stdout\n" +
+			"  --scryptN VALUE - scrypt N parameter (default=" + FileFormatV1.SCRYPT_N + ")\n" +
+			"  --scryptP VALUE - scrypt P parameter (default=" + FileFormatV1.SCRYPT_P + ")\n" +
+			"  --scryptR VALUE - scrypt R parameter (default=" + FileFormatV1.SCRYPT_R + ")\n" +
+			"  --verbose - log diagnostic messages to stdout\n" +
 			"";
 	}
 }

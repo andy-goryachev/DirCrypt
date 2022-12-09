@@ -30,16 +30,22 @@ public class DirCrypt
 				String pass = checkPassphrase(a.passPhrase);
 				File outFile = checkOutputFile(log, a.outputFile, a.force);
 				List<File> dirs = checkDirectories(a.dirs);
+				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
+				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
+				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				
-				DirCryptProcess.encrypt(log, pass, dirs, outFile, a.force);
+				DirCryptProcess.encrypt(log, pass, dirs, outFile, a.force, N, R, P);
 			}
 			else if(a.listing)
 			{
 				String pass = checkPassphrase(a.passPhrase);
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
+				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
+				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
+				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				
-				DirCryptProcess.decrypt(log, pass, in, null, false);
+				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P);
 			}
 			else if(a.decrypt)
 			{
@@ -47,8 +53,11 @@ public class DirCrypt
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
 				File destDir = checkDestDir(a.destination);
+				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
+				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
+				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				
-				DirCryptProcess.decrypt(log, pass, in, destDir, a.force);
+				DirCryptProcess.decrypt(log, pass, in, destDir, a.force, N, R, P);
 			}
 			else
 			{
@@ -159,6 +168,24 @@ public class DirCrypt
 		}
 		
 		throw err("Unable to create destination directory: " + dir);
+	}
+	
+	
+	private static int checkScrypt(String text, int defaultValue) throws Exception
+	{
+		int v;
+		try
+		{
+			v = Integer.parseInt(text);
+			if((v > 0) && (v < 16_000_000))
+			{
+				return v;
+			}
+		}
+		catch(NumberFormatException e)
+		{ }
+			
+		throw new UserException("Invalid Scrypt parameter: " + text);
 	}
 
 

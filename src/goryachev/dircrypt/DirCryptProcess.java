@@ -36,7 +36,7 @@ public class DirCryptProcess
 	private static DecimalFormat numberFormatter;
 	
 	
-	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile, boolean force) throws Exception
+	public static void encrypt(Logger log, String pass, List<File> dirs, File outFile, boolean force, int N, int R, int P) throws Exception
 	{
 		// create a temp file before generating any key material
 		File parent = outFile.getParentFile();
@@ -49,7 +49,7 @@ public class DirCryptProcess
 		File file = File.createTempFile("DirCrypt.", null, parent);
 
 		// generate key while scanning the file system
-		Future<KeyMaterial> futureKey = generateKey(log, pass, null);
+		Future<KeyMaterial> futureKey = generateKey(log, pass, null, N, R, P);
 
 		FileScanner fs = new FileScanner(log, dirs);
 		Header h = fs.scan();
@@ -138,7 +138,7 @@ public class DirCryptProcess
 	}
 
 
-	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force) throws Exception
+	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force, int N, int R, int P) throws Exception
 	{
 		boolean listing = (destDir == null);
 		
@@ -150,7 +150,7 @@ public class DirCryptProcess
 		}
 		
 		// generate key
-		KeyMaterial km = KeyMaterial.generate(log, pass, storedRandomness);
+		KeyMaterial km = KeyMaterial.generate(log, pass, storedRandomness, N, R, P);
 		km.checkError();
 		
 		byte[] buffer = new byte[BUFFER_SIZE];
@@ -258,7 +258,7 @@ public class DirCryptProcess
 	}
 
 
-	private static Future<KeyMaterial> generateKey(Logger log, String pass, byte[] storedRandomness)
+	private static Future<KeyMaterial> generateKey(Logger log, String pass, byte[] storedRandomness, int N, int R, int P)
 	{
 		CompletableFuture<KeyMaterial> f = new CompletableFuture();
 		
@@ -266,7 +266,7 @@ public class DirCryptProcess
 		{
 			public void run()
 			{
-				KeyMaterial km = KeyMaterial.generate(log, pass, storedRandomness);
+				KeyMaterial km = KeyMaterial.generate(log, pass, storedRandomness, N, R, P);
 				f.complete(km);
 			}
 		}.start();
