@@ -23,6 +23,7 @@ public class CmdArgs
 	public String N;
 	public String R;
 	public String P;
+	public boolean version;
 	
 	
 	private CmdArgs()
@@ -81,6 +82,9 @@ public class CmdArgs
 				case "--scryptR":
 					a.R = p.nextToken();
 					break;
+				case "--version":
+					a.version = true;
+					break;
 				default:
 					throw new UserException("Unrecognized option: " + tok);
 				}
@@ -99,7 +103,7 @@ public class CmdArgs
 		return
 			"USAGE\n" +
 			"Encrypt:\n" +
-			"  java -jar DirCrypt.jar --enc --out FILE [options] dir1 dir2 ...\n" +
+			"  java -jar DirCrypt.jar --enc --out FILE [options] DIR1 DIR2 ...\n" +
 			"Decrypt:\n" +
 			"  java -jar DirCrypt.jar --dec --in FILE [options] --dest OUTDIR\n" +
 			"List Contents:\n" +
@@ -109,13 +113,14 @@ public class CmdArgs
 			"  --force - overwrite files\n" +
 			"  --help\n" +
 			"  --in INPUT_FILE\n" +
-			"  --list - list file contents\n" +
+			"  --list - lists file contents\n" +
 			"  --out OUTPUT_FILE\n" +
 			"  --pass PASSPHRASE\n" +
 			"  --scryptN VALUE - scrypt N parameter (default=" + FileFormatV1.SCRYPT_N + ")\n" +
 			"  --scryptP VALUE - scrypt P parameter (default=" + FileFormatV1.SCRYPT_P + ")\n" +
 			"  --scryptR VALUE - scrypt R parameter (default=" + FileFormatV1.SCRYPT_R + ")\n" +
-			"  --verbose - log diagnostic messages to stdout\n" +
+			"  --verbose - logs diagnostic messages to stdout\n" +
+			"  --version - prints version string\n" +
 			"";
 	}
 }
