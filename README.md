@@ -5,7 +5,7 @@ Uses [scrypt](https://en.wikipedia.org/wiki/Scrypt)
 for password-based key derivation function and 
 [XSalsa20](https://en.wikipedia.org/wiki/Salsa20#XChaCha) cipher.
 
-**Download:** [DirCrypt.jar](dist/DirCrypt.jar)
+**Download:** [DirCrypt.jar](https://github.com/andy-goryachev/DirCrypt/raw/main/dist/DirCrypt.jar)
 
 ## Encrypt
 
