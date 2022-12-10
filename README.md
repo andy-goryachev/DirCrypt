@@ -5,19 +5,25 @@ for password-based key derivation function and
 
 ## Encrypt
 
+```
   java -jar DirCrypt.jar --enc --out FILE [options] DIR1 DIR2 ...
+```
 
 ## Decrypt
 
+```
   java -jar DirCrypt.jar --dec --in FILE [options] --dest OUTDIR
+```
 
 ## List Archive Contents
 
+```
   java -jar DirCrypt.jar --list --in FILE --list
+```
 
 ## Options
 
-|Option|Argument|Description|Default Value||
+| Option | Argument | Description | Default Value |
 |---|---|---|---|
 |--dest|Directory|Specifies the destination directory| |
 |--force| |Overwrites output file(s)| |
