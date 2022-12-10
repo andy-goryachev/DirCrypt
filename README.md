@@ -1,7 +1,11 @@
 # DirCrypt
-Command Line Utility for Encrypting Folders.  Uses [scrypt](https://en.wikipedia.org/wiki/Scrypt)
+Command Line Utility for Encrypting Folders.
+
+Uses [scrypt](https://en.wikipedia.org/wiki/Scrypt)
 for password-based key derivation function and 
 [XSalsa20](https://en.wikipedia.org/wiki/Salsa20#XChaCha) cipher.
+
+**Download:** [DirCrypt.jar](dist/DirCrypt.jar)
 
 ## Encrypt
 
