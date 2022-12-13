@@ -41,3 +41,14 @@ for password-based key derivation function and
 |--scryptR|Integer|Scrypt R parameter|16|
 |--verbose| |Logs diagnostic messages to stdout| |
 |--version| |Prints version string| |
+
+
+## Security
+
+Please refer to the [File Format Specification](doc/FileFormatSpec.md).
+
+
+## WARNING
+
+The code has not been formally reviewed.  Do not use in production.
+
