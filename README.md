@@ -32,7 +32,7 @@ for password-based key derivation function and
 |--dest|Directory|Specifies the destination directory| |Decryption|
 |--force| |Overwrites output file(s)| |Decryption|
 |--help| |Prints usage| | |
-|--in|File|Specifies input archive file name| |Encryption,Listing|
+|--in|File|Specifies input archive file name| |Encryption, Listing|
 |--list| |Lists file contents| |Listing|
 |--out|File|Specifies output archive file| |Encryption|
 |--pass|Text|Passphrase| | |
