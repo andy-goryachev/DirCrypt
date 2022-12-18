@@ -27,20 +27,20 @@ for password-based key derivation function and
 
 ## Options
 
-| Option | Argument | Description | Default Value |
-|---|---|---|---|
-|--dest|Directory|Specifies the destination directory| |
-|--force| |Overwrites output file(s)| |
-|--help| |Prints usage| |
-|--in|File|Specifies input archive file name| |
-|--list| |Lists file contents| |
-|--out|File|Specifies output archive file| |
-|--pass|Text|Passphrase| |
-|--scryptN|Integer|Scrypt N parameter|32768|
-|--scryptP|Integer|Scrypt P parameter|32|
-|--scryptR|Integer|Scrypt R parameter|16|
-|--verbose| |Logs diagnostic messages to stdout| |
-|--version| |Prints version string| |
+| Option | Argument | Description | Default Value | Required For |
+|---|---|---|---|---|
+|--dest|Directory|Specifies the destination directory| |Decryption|
+|--force| |Overwrites output file(s)| |Decryption|
+|--help| |Prints usage| | |
+|--in|File|Specifies input archive file name| |Encryption,Listing|
+|--list| |Lists file contents| |Listing|
+|--out|File|Specifies output archive file| |Encryption|
+|--pass|Text|Passphrase| | |
+|--scryptN|Integer|Scrypt N parameter|32768| |
+|--scryptP|Integer|Scrypt P parameter|32| |
+|--scryptR|Integer|Scrypt R parameter|16| |
+|--verbose| |Logs diagnostic messages to stdout| | |
+|--version| |Prints version string| | |
 
 
 ## Security

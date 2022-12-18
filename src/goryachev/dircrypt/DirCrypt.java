@@ -4,6 +4,7 @@ import goryachev.common.util.CKit;
 import goryachev.common.util.CList;
 import goryachev.common.util.UserException;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public class DirCrypt
 {
-	protected static final String VERSION = "2022-1209-1700";
+	protected static final String VERSION = "2022-1218-1244";
 
 		
 	public static void main(String[] args)
@@ -35,35 +36,35 @@ public class DirCrypt
 			}
 			else if(a.encrypt)
 			{
-				String pass = checkPassphrase(a.passPhrase);
 				File outFile = checkOutputFile(log, a.outputFile, a.force);
 				List<File> dirs = checkDirectories(a.dirs);
 				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
 				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
+				String pass = getPassphrase(a.passPhrase);
 				
 				DirCryptProcess.encrypt(log, pass, dirs, outFile, a.force, N, R, P);
 			}
 			else if(a.listing)
 			{
-				String pass = checkPassphrase(a.passPhrase);
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
 				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
 				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
+				String pass = getPassphrase(a.passPhrase);
 				
 				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P);
 			}
 			else if(a.decrypt)
 			{
-				String pass = checkPassphrase(a.passPhrase);
 				String inputFile = a.inputFile;
 				File in = checkInputFile(inputFile);
 				File destDir = checkDestDir(a.destination);
 				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
 				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
+				String pass = getPassphrase(a.passPhrase);
 				
 				DirCryptProcess.decrypt(log, pass, in, destDir, a.force, N, R, P);
 			}
@@ -85,11 +86,29 @@ public class DirCrypt
 	}
 	
 	
-	private static String checkPassphrase(String s)
+	private static String getPassphrase(String s)
 	{
 		if(CKit.isBlank(s))
 		{
-			throw err("Passphrase is required");
+			try
+			{
+				for(;;)
+				{
+					char[] pw1 = System.console().readPassword("Passphrase:");
+					char[] pw2 = System.console().readPassword("Repeat passphrase:");
+					
+					if(CKit.isNotBlank(pw1) && CKit.isNotBlank(pw2) && Arrays.equals(pw1, pw2))
+					{
+						return new String(pw1);
+					}
+					
+					System.out.println("Passphrase mismatch.  Please re-enter.");
+				}
+			}
+			catch(Throwable e)
+			{
+				throw err("Passphrase is required");
+			}
 		}
 		return s;
 	}
