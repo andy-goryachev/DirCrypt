@@ -35,9 +35,9 @@ for password-based key derivation function and
 
 | Option | Argument | Description | Default Value | Required For |
 |---|---|---|---|---|
-|--dec| |Decrypt archive| |Decryption|
+|--dec| |Decrypts archive| |Decryption|
 |--dest|Directory|Specifies the destination directory| |Decryption|
-|--enc| |Encrypt file(s) or directories| |Encryption|
+|--enc| |Encrypts file(s) or directories| |Encryption|
 |--force| |Overwrites output file(s)| |Decryption|
 |--help| |Prints usage| | |
 |--in|File|Specifies input archive file name| |Encryption, Listing, Verify|
@@ -48,7 +48,7 @@ for password-based key derivation function and
 |--scryptP|Integer|Scrypt P parameter|32| |
 |--scryptR|Integer|Scrypt R parameter|16| |
 |--verbose| |Logs diagnostic messages to stdout| | |
-|--verify| |Verify archive integrity| |Verify|
+|--verify| |Verifies archive integrity| |Verify|
 |--version| |Prints version string| | |
 
 
