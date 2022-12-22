@@ -19,6 +19,7 @@ public class CmdArgs
 	public String passPhrase;
 	public boolean listing;
 	public boolean verbose;
+	public boolean verify;
 	public boolean usage;
 	public String N;
 	public String R;
@@ -70,9 +71,6 @@ public class CmdArgs
 				case "--pass":
 					a.passPhrase = p.nextToken();
 					break;
-				case "--verbose":
-					a.verbose = true;
-					break;
 				case "--scryptN":
 					a.N = p.nextToken();
 					break;
@@ -81,6 +79,12 @@ public class CmdArgs
 					break;
 				case "--scryptR":
 					a.R = p.nextToken();
+					break;
+				case "--verbose":
+					a.verbose = true;
+					break;
+				case "--verify":
+					a.verify = true;
 					break;
 				case "--version":
 					a.version = true;
@@ -105,9 +109,11 @@ public class CmdArgs
 			"Encrypt:\n" +
 			"  java -jar DirCrypt.jar --enc --out FILE [options] DIR1 DIR2 ...\n" +
 			"Decrypt:\n" +
-			"  java -jar DirCrypt.jar --dec --in FILE [options] --dest OUTDIR\n" +
+			"  java -jar DirCrypt.jar --dec --in FILE --dest OUTDIR [options]\n" +
 			"List Contents:\n" +
-			"  java -jar DirCrypt.jar --list --in FILE --list\n" +
+			"  java -jar DirCrypt.jar --list --in FILE [options]\n" +
+			"Verify Contents:\n" +
+			"  java -jar DirCrypt.jar --verify --in FILE [options]\n" +
 			"Options:\n" +
 			"  --dest DESTINATION_DIRECTORY\n" +
 			"  --force - overwrite files\n" +

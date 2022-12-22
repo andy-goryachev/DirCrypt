@@ -16,13 +16,19 @@ for password-based key derivation function and
 ## Decrypt
 
 ```
-  java -jar DirCrypt.jar --dec --in FILE [options] --dest OUTDIR
+  java -jar DirCrypt.jar --dec --in FILE --dest OUTDIR [options]
 ```
 
 ## List Archive Contents
 
 ```
-  java -jar DirCrypt.jar --list --in FILE --list
+  java -jar DirCrypt.jar --list --in FILE [options]
+```
+
+## Verify Archive Contents
+
+```
+  java -jar DirCrypt.jar --verify --in FILE [options]
 ```
 
 ## Options
@@ -32,7 +38,7 @@ for password-based key derivation function and
 |--dest|Directory|Specifies the destination directory| |Decryption|
 |--force| |Overwrites output file(s)| |Decryption|
 |--help| |Prints usage| | |
-|--in|File|Specifies input archive file name| |Encryption, Listing|
+|--in|File|Specifies input archive file name| |Encryption, Listing, Verify|
 |--list| |Lists file contents| |Listing|
 |--out|File|Specifies output archive file| |Encryption|
 |--pass|Text|Passphrase| | |

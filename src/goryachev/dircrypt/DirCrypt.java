@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class DirCrypt
 {
-	protected static final String VERSION = "2022-1218-1244";
+	protected static final String VERSION = "2022-1221-1927";
 
 		
 	public static void main(String[] args)
@@ -54,7 +54,18 @@ public class DirCrypt
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				String pass = getPassphrase(a.passPhrase);
 				
-				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P);
+				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P, false);
+			}
+			else if(a.verify)
+			{
+				String inputFile = a.inputFile;
+				File in = checkInputFile(inputFile);
+				int N = checkScrypt(a.N, FileFormatV1.SCRYPT_N);
+				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
+				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
+				String pass = getPassphrase(a.passPhrase);
+				
+				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P, true);
 			}
 			else if(a.decrypt)
 			{
@@ -66,11 +77,11 @@ public class DirCrypt
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				String pass = getPassphrase(a.passPhrase);
 				
-				DirCryptProcess.decrypt(log, pass, in, destDir, a.force, N, R, P);
+				DirCryptProcess.decrypt(log, pass, in, destDir, a.force, N, R, P, true);
 			}
 			else
 			{
-				throw new UserException("Required: --enc, --dec, or --list.");
+				throw new UserException("Required: --enc, --dec, --list, or --verify.");
 			}
 		}
 		catch(UserException e)

@@ -25,9 +25,6 @@ import java.util.concurrent.Future;
 
 /**
  * Dir Crypt Process.
- * 
- * TODO log elapsed time
- * TODO log data size
  */
 public class DirCryptProcess
 {
@@ -138,9 +135,11 @@ public class DirCryptProcess
 	}
 
 
-	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force, int N, int R, int P) throws Exception
+	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force, int N, int R, int P, boolean verify) throws Exception
 	{
-		boolean listing = (destDir == null);
+		boolean write = (destDir != null);
+		boolean list = !write && !verify;
+//		boolean listing = (destDir == null) && (!verify);
 		
 		// read random
 		byte[] storedRandomness = CKit.readBytes(inputFile, FileFormatV1.IV_SIZE_BYTES);
@@ -190,7 +189,7 @@ public class DirCryptProcess
 			// TODO
 			
 			int lenColWidth = 0;
-			if(listing)
+			if(list)
 			{
 				numberFormatter = new DecimalFormat("#,##0");
 				
@@ -209,7 +208,7 @@ public class DirCryptProcess
 				// switch won't work because it creates resource not closed warning
 				if(en.getType() == EntryType.DIR)
 				{
-					if(!listing)
+					if(write)
 					{
 						File dir = new File(destDir, en.getPath());
 						dir.mkdirs();
@@ -217,10 +216,32 @@ public class DirCryptProcess
 				}
 				else if(en.getType() == EntryType.FILE)
 				{
-					if(listing)
+					if(list)
 					{
 						String s = formatFileEntry(en, lenColWidth);
 						log.print(s);
+					}
+					else if(verify)
+					{
+						String path = en.getPath();
+						long len = en.getFileLength();
+						log.log("VERIFY", "path", path, "length", len);
+						
+						byte[] hash = verifyFile(rf, buffer, len);
+						
+						// compare hash
+						if(Arrays.equals(en.getHash(), hash))
+						{
+							log.log(() -> 
+							{
+								log.log("OK", "name", en.getName(), "hash", Hex.toHexString(hash));
+							});
+						}
+						else
+						{
+							// TODO keep going?
+							throw new UserException("hash mismatch file=" + en);
+						}
 					}
 					else
 					{
@@ -299,6 +320,15 @@ public class DirCryptProcess
 	}
 	
 	
+	private static byte[] verifyFile(XSalsaRandomAccessFile rf, byte[] buf, long len) throws Exception
+	{
+		try(InputStream in = new InputStreamWrapper(rf, len))
+		{
+			return copyWithDigest(in, null, buf);
+		}
+	}
+	
+	
 	private static byte[] copyWithDigest(InputStream in, OutputStream out, byte[] buf) throws Exception
 	{
 		Blake2bDigest digest = new Blake2bDigest(FileFormatV1.FILE_HASH_SIZE_BITS);
@@ -319,7 +349,10 @@ public class DirCryptProcess
 			}
 			else if(rd > 0)
 			{
-				out.write(buf, 0, rd);
+				if(out != null)
+				{
+					out.write(buf, 0, rd);
+				}
 				digest.update(buf, 0, rd);
 			}
 		}
