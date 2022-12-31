@@ -139,7 +139,6 @@ public class DirCryptProcess
 	{
 		boolean write = (destDir != null);
 		boolean list = !write && !verify;
-//		boolean listing = (destDir == null) && (!verify);
 		
 		// read random
 		byte[] storedRandomness = CKit.readBytes(inputFile, FileFormatV1.IV_SIZE_BYTES);
@@ -273,7 +272,12 @@ public class DirCryptProcess
 						{
 							if(ignoreErrors)
 							{
-								log.log("ERROR hash mismatch", "name", en.getName());
+								File badFile = makeBadFile(f); 
+								log.log("ERROR hash mismatch", "name", en.getName(), "file", badFile);
+								if(!f.renameTo(badFile))
+								{
+									log.log("ERROR failed to rename bad file", "file", f);
+								}
 							}
 							else
 							{
@@ -398,5 +402,13 @@ public class DirCryptProcess
 		sb.sp(2);
 		sb.append(path);
 		return sb.toString();
+	}
+	
+	
+	private static File makeBadFile(File f)
+	{
+		File p = f.getParentFile();
+		String name = f.getName() + ".BAD." + System.currentTimeMillis();
+		return new File(p, name);
 	}
 }
