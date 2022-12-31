@@ -21,6 +21,7 @@ public class CmdArgs
 	public boolean verbose;
 	public boolean verify;
 	public boolean usage;
+	public boolean ignoreErrors;
 	public String N;
 	public String R;
 	public String P;
@@ -58,6 +59,9 @@ public class CmdArgs
 					break;
 				case "--help":
 					a.usage = true;
+					break;
+				case "--ignoreErrors":
+					a.ignoreErrors = true;
 					break;
 				case "--in":
 					a.inputFile = p.nextToken();
@@ -118,6 +122,7 @@ public class CmdArgs
 			"  --dest DESTINATION_DIRECTORY\n" +
 			"  --force - overwrite files\n" +
 			"  --help\n" +
+			"  --ignoreErrors - restore corrupted files\n" +
 			"  --in INPUT_FILE\n" +
 			"  --list - lists file contents\n" +
 			"  --out OUTPUT_FILE\n" +

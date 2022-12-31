@@ -40,6 +40,7 @@ for password-based key derivation function and
 |--enc| |Encrypts file(s) or directories| |Encryption|
 |--force| |Overwrites output file(s)| |Decryption|
 |--help| |Prints usage| | |
+|--ignoreErrors| |Ignore integrity errors, decrypt corrupt files| | |
 |--in|File|Specifies input archive file name| |Encryption, Listing, Verify|
 |--list| |Lists file contents| |Listing|
 |--out|File|Specifies output archive file| |Encryption|

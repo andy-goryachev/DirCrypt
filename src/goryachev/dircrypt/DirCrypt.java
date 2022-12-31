@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class DirCrypt
 {
-	protected static final String VERSION = "2022-1221-1927";
+	protected static final String VERSION = "2022-1230-1847";
 
 		
 	public static void main(String[] args)
@@ -53,8 +53,9 @@ public class DirCrypt
 				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				String pass = getPassphrase(a.passPhrase);
+				boolean ignoreErrors = a.ignoreErrors;
 				
-				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P, false);
+				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P, false, ignoreErrors);
 			}
 			else if(a.verify)
 			{
@@ -64,8 +65,9 @@ public class DirCrypt
 				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				String pass = getPassphrase(a.passPhrase);
+				boolean ignoreErrors = a.ignoreErrors;
 				
-				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P, true);
+				DirCryptProcess.decrypt(log, pass, in, null, false, N, R, P, true, ignoreErrors);
 			}
 			else if(a.decrypt)
 			{
@@ -76,8 +78,9 @@ public class DirCrypt
 				int R = checkScrypt(a.R, FileFormatV1.SCRYPT_R);
 				int P = checkScrypt(a.P, FileFormatV1.SCRYPT_P);
 				String pass = getPassphrase(a.passPhrase);
+				boolean ignoreErrors = a.ignoreErrors;
 				
-				DirCryptProcess.decrypt(log, pass, in, destDir, a.force, N, R, P, true);
+				DirCryptProcess.decrypt(log, pass, in, destDir, a.force, N, R, P, true, ignoreErrors);
 			}
 			else
 			{

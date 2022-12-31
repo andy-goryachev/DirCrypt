@@ -135,7 +135,7 @@ public class DirCryptProcess
 	}
 
 
-	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force, int N, int R, int P, boolean verify) throws Exception
+	public static void decrypt(Logger log, String pass, File inputFile, File destDir, boolean force, int N, int R, int P, boolean verify, boolean ignoreErrors) throws Exception
 	{
 		boolean write = (destDir != null);
 		boolean list = !write && !verify;
@@ -239,8 +239,14 @@ public class DirCryptProcess
 						}
 						else
 						{
-							// TODO keep going?
-							throw new UserException("hash mismatch file=" + en);
+							if(ignoreErrors)
+							{
+								log.log("ERROR hash mismatch", "name", en.getName());
+							}
+							else
+							{
+								throw new UserException("hash mismatch file=" + en);
+							}
 						}
 					}
 					else
@@ -265,8 +271,14 @@ public class DirCryptProcess
 						// compare hash
 						if(!Arrays.equals(en.getHash(), hash))
 						{
-							// TODO delete file?
-							throw new UserException("hash mismatch file=" + en); // TODO file path
+							if(ignoreErrors)
+							{
+								log.log("ERROR hash mismatch", "name", en.getName());
+							}
+							else
+							{
+								throw new UserException("hash mismatch file=" + en); // TODO file path
+							}
 						}
 					}
 				}
