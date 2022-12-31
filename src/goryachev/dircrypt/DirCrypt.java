@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class DirCrypt
 {
-	protected static final String VERSION = "2022-1230-1847";
+	protected static final String VERSION = "2022-1230-1900";
 
 		
 	public static void main(String[] args)
@@ -21,7 +21,6 @@ public class DirCrypt
 		try
 		{
 			CmdArgs a = CmdArgs.parse(args);
-
 			Logger log = new Logger(a.verbose);
 			
 			if(a.version)
