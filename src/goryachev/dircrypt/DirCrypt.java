@@ -1,8 +1,9 @@
-// Copyright © 2022 Andy Goryachev <andy@goryachev.com>
+// Copyright © 2022-2023 Andy Goryachev <andy@goryachev.com>
 package goryachev.dircrypt;
 import goryachev.common.util.CKit;
 import goryachev.common.util.CList;
 import goryachev.common.util.UserException;
+import java.io.Console;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public class DirCrypt
 {
-	protected static final String VERSION = "2022-1230-1900";
+	protected static final String VERSION = "2023-0428-1645";
 
 		
 	public static void main(String[] args)
@@ -103,24 +104,23 @@ public class DirCrypt
 	{
 		if(CKit.isBlank(s))
 		{
-			try
+			Console c = System.console();
+			if(c == null)
 			{
-				for(;;)
-				{
-					char[] pw1 = System.console().readPassword("Passphrase:");
-					char[] pw2 = System.console().readPassword("Repeat passphrase:");
-					
-					if(CKit.isNotBlank(pw1) && CKit.isNotBlank(pw2) && Arrays.equals(pw1, pw2))
-					{
-						return new String(pw1);
-					}
-					
-					System.out.println("Passphrase mismatch.  Please re-enter.");
-				}
+				throw err("Missing passphrase.");
 			}
-			catch(Throwable e)
+						
+			for(;;)
 			{
-				throw err("Passphrase is required");
+				char[] pw1 = c.readPassword("Passphrase:");
+				char[] pw2 = c.readPassword("Confirm passphrase:");
+				
+				if(CKit.isNotBlank(pw1) && CKit.isNotBlank(pw2) && Arrays.equals(pw1, pw2))
+				{
+					return new String(pw1);
+				}
+				
+				System.out.println("Passphrase mismatch.  Please retry.");
 			}
 		}
 		return s;
